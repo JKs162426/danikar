@@ -1,0 +1,56 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--cuerpo);
+  font-size: var(--t-base);
+  line-height: 1.55;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-variation-settings: "SOFT" 40, "WONK" 1;
+  line-height: 1.15;
+  margin: 0;
+}
+
+/* La banda de grosgrain: el elemento firma. */
+.grosgrain {
+  height: 6px;
+  background: var(--grosgrain);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  /* 16px evita que Safari en iPhone haga zoom al enfocar un campo. */
+  font-size: max(16px, var(--t-base));
+}
+
+:focus-visible {
+  outline: 2px solid var(--azul-rey);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

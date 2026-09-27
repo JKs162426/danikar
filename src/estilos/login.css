@@ -1,0 +1,99 @@
+@import "./tokens.css";
+
+.login-pagina {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--tinta);
+  padding: 24px;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: var(--radio-lg);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: var(--sombra-alta);
+}
+
+.login-marca {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-marca h1 {
+  font-family: var(--display);
+  font-size: var(--t-2xl);
+  color: var(--fucsia);
+  margin: 0 0 4px;
+}
+
+.login-marca p {
+  font-size: var(--t-sm);
+  color: var(--tinta-suave);
+  margin: 0;
+}
+
+.login-lbl {
+  display: block;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--tinta-suave);
+  margin-bottom: 14px;
+}
+
+.login-inp {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding: 11px 13px;
+  font-size: 16px;
+  border-radius: var(--radio);
+  border: 1px solid var(--linea);
+  color: var(--tinta);
+  font-family: var(--cuerpo);
+  box-sizing: border-box;
+  background: var(--papel);
+  transition: border-color 0.15s;
+}
+.login-inp:focus {
+  outline: none;
+  border-color: var(--fucsia);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: var(--fucsia);
+  color: #fff;
+  border: none;
+  border-radius: var(--radio);
+  font-size: var(--t-base);
+  font-weight: 700;
+  font-family: var(--cuerpo);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.login-btn:hover:not(:disabled) {
+  background: var(--fucsia-hondo);
+}
+.login-btn:disabled {
+  background: var(--linea);
+  color: var(--tinta-suave);
+  cursor: not-allowed;
+}
+
+.login-error {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fff0f4;
+  border: 1px solid var(--fucsia);
+  border-radius: var(--radio);
+  font-size: var(--t-sm);
+  color: var(--fucsia-hondo);
+  text-align: center;
+}

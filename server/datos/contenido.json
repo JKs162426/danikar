@@ -1,0 +1,44 @@
+{
+  "negocio": {
+    "nombre": "Detalles DanKar",
+    "descripcion": "Cintillos, lazos, pulseras y muchas cosas más.",
+    "telefonoWhatsapp": "584121234567",
+    "instagram": "detalles_dankar",
+    "ubicacion": "Pariaguán, Anzoátegui, Venezuela",
+    "saludoPedido": "Hola, quiero hacer un pedido:"
+  },
+  "categorias": [
+    "lazos",
+    "cintillos",
+    "pulseras"
+  ],
+  "productos": [
+    {
+      "id": "lazo-clasico",
+      "nombre": "Lazo clásico",
+      "descripcion": "Lazo de doble capa con terminación a mano.",
+      "categoria": "lazos",
+      "colores": [
+        "Azul rey",
+        "Rojo",
+        "Fucsia",
+        "Amarillo"
+      ],
+      "variantes": [
+        {
+          "tamano": "Pequeño",
+          "precio": 3
+        },
+        {
+          "tamano": "Mediano",
+          "precio": 5
+        }
+      ],
+      "tipoAgarre": "pinza",
+      "imagenes": [],
+      "personalizable": true,
+      "disponible": true
+    }
+  ],
+  "actualizadoEn": "2026-08-24T03:25:27.622Z"
+}

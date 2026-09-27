@@ -1,0 +1,47 @@
+:root {
+  /* Color — anclado al logo y al inventario real de Dankar */
+  --fucsia: #c81d6b;
+  --fucsia-hondo: #8e1149;
+  --azul-rey: #1e3a8f;
+  --amarillo: #f0b429;
+
+  --papel: #fbf7f8; /* blanco tibio, como la cartulina de montaje */
+  --papel-hondo: #f3e9ee;
+  --tinta: #2a1b22; /* ciruela oscuro, nunca negro puro */
+  --tinta-suave: #6b5560;
+  --linea: #e8d5de;
+
+  /* Tipografía */
+  --display: "Fraunces", Georgia, serif;
+  --cuerpo: "Karla", system-ui, sans-serif;
+
+  --t-xs: 0.75rem;
+  --t-sm: 0.875rem;
+  --t-base: 1rem;
+  --t-lg: 1.25rem;
+  --t-xl: 1.75rem;
+  --t-2xl: 2.5rem;
+
+  /* Espaciado */
+  --e-1: 0.25rem;
+  --e-2: 0.5rem;
+  --e-3: 0.75rem;
+  --e-4: 1rem;
+  --e-6: 1.5rem;
+  --e-8: 2rem;
+  --e-12: 3rem;
+
+  --radio: 10px;
+  --radio-lg: 14px;
+
+  --sombra: 0 1px 2px rgba(42, 27, 34, 0.06), 0 4px 12px rgba(42, 27, 34, 0.05);
+  --sombra-alta: 0 8px 28px rgba(42, 27, 34, 0.14);
+
+  /* Firma: la nervadura del grosgrain. Las costillas corren
+     perpendiculares al largo de la cinta, por eso son verticales. */
+  --grosgrain: repeating-linear-gradient(
+    90deg,
+    var(--fucsia) 0 2px,
+    var(--fucsia-hondo) 2px 4px
+  );
+}
