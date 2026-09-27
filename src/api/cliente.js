@@ -1,7 +1,9 @@
 // En desarrollo el "proxy" del package.json reenvía al backend en 4000,
 // así que la ruta relativa alcanza. En producción hará falta una URL
 // absoluta, pero eso lo resolvemos al desplegar.
-const BASE = "/api";
+const BASE = process.env.REACT_APP_API_URL
+  ? `${process.env.REACT_APP_API_URL}/api`
+  : "/api";
 
 export class ErrorApi extends Error {
   constructor(mensaje, estado, detalles = null) {

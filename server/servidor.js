@@ -7,12 +7,20 @@ import publicas from "./rutas/publicas.js";
 import admin from "./rutas/admin.js";
 import { join } from "node:path";
 import archivos from "./rutas/archivos.js";
+import cors from "cors";
 
 const app = express();
 
 // Render y Fly ponen un proxy delante. Sin esto req.ip es la IP del
 // proxy y el limitador bloquearía a todo el mundo junto.
 app.set("trust proxy", 1);
+app.use(
+  cors({
+    origin:
+      process.env.ORIGENES_PERMITIDOS?.split(",").map((o) => o.trim()) ?? [],
+    credentials: true,
+  })
+);
 
 app.use((req, res, next) => {
   // Si las cabeceras pesan más de 8 KB, casi siempre son cookies basura.
