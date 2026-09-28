@@ -14,19 +14,19 @@ const app = express();
 // Render y Fly ponen un proxy delante. Sin esto req.ip es la IP del
 // proxy y el limitador bloquearía a todo el mundo junto.
 app.set("trust proxy", 1);
-app.options(
-  "(.*)",
-  cors({
-    origin:
-      process.env.ORIGENES_PERMITIDOS?.split(",").map((o) => o.trim()) ?? [],
-    credentials: true,
-  })
-);
-
 app.use(
   cors({
-    origin:
-      process.env.ORIGENES_PERMITIDOS?.split(",").map((o) => o.trim()) ?? [],
+    origin: (origin, callback) => {
+      const permitidos = (process.env.ORIGENES_PERMITIDOS ?? "")
+        .split(",")
+        .map((o) => o.trim());
+      if (!origin || permitidos.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("[cors] bloqueado:", origin, "| permitidos:", permitidos);
+        callback(new Error("CORS: origen no permitido"));
+      }
+    },
     credentials: true,
   })
 );
