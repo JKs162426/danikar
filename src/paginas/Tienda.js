@@ -47,6 +47,109 @@ export default function Tienda() {
         )}
       </header>
 
+      <section
+        style={{
+          display: "flex",
+          gap: 16,
+          marginBottom: 28,
+          flexWrap: "wrap",
+        }}
+      >
+        {[
+          {
+            emoji: "🎀",
+            titulo: "Elige tu producto",
+            texto: "Explora el catálogo y encuentra el que más te guste.",
+          },
+          {
+            emoji: "🎨",
+            titulo: "Elige color y tamaño",
+            texto:
+              "Selecciona las opciones y agrega una nota si quieres personalizarlo.",
+          },
+          {
+            emoji: "💬",
+            titulo: "Envía tu pedido",
+            texto:
+              "Te redirigimos a WhatsApp con todo listo. Solo dale enviar.",
+          },
+        ].map((paso, i) => (
+          <div
+            key={i}
+            style={{
+              flex: "1 1 180px",
+              background: "#fff",
+              borderRadius: "var(--radio-lg)",
+              padding: "20px 16px",
+              textAlign: "center",
+              boxShadow: "var(--sombra)",
+              borderTop: "3px solid var(--fucsia)",
+            }}
+          >
+            <div style={{ fontSize: 28, marginBottom: 8 }}>{paso.emoji}</div>
+            <h3
+              style={{
+                fontFamily: "var(--display)",
+                fontSize: "var(--t-base)",
+                color: "var(--tinta)",
+                margin: "0 0 6px",
+              }}
+            >
+              {paso.titulo}
+            </h3>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "var(--t-sm)",
+                color: "var(--tinta-suave)",
+                lineHeight: 1.5,
+              }}
+            >
+              {paso.texto}
+            </p>
+          </div>
+        ))}
+      </section>
+
+      <div
+        style={{
+          background:
+            "linear-gradient(135deg, var(--fucsia) 0%, var(--fucsia-hondo) 100%)",
+          borderRadius: "var(--radio-lg)",
+          padding: "20px 24px",
+          marginBottom: 24,
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ fontSize: 36 }}>✨</div>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <h3
+            style={{
+              fontFamily: "var(--display)",
+              color: "#fff",
+              margin: "0 0 4px",
+              fontSize: "var(--t-lg)",
+            }}
+          >
+            ¿Lo quieres personalizado?
+          </h3>
+          <p
+            style={{
+              margin: 0,
+              color: "rgba(255,255,255,0.85)",
+              fontSize: "var(--t-sm)",
+              lineHeight: 1.5,
+            }}
+          >
+            Colores de tu colegio, nombre de tu niña, o cualquier detalle
+            especial. Agrégalo en la nota al hacer tu pedido.
+          </p>
+        </div>
+      </div>
+
       <nav
         style={{
           display: "flex",
@@ -87,15 +190,87 @@ export default function Tienda() {
       <footer
         style={{
           marginTop: 60,
-          paddingTop: 20,
+          padding: "32px 24px 24px",
           borderTop: "1px solid var(--linea)",
-          textAlign: "center",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 6,
+          gap: 12,
+          textAlign: "center",
         }}
       >
+        {/* Nombre del negocio */}
+        <p
+          style={{
+            margin: 0,
+            fontFamily: "var(--display)",
+            fontSize: "var(--t-lg)",
+            color: "var(--fucsia)",
+          }}
+        >
+          {negocio.nombre}
+        </p>
+
+        {/* Instagram */}
+        <a
+          href="https://instagram.com/detalles_dankar"
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            color: "var(--tinta-suave)",
+            fontSize: "var(--t-sm)",
+            textDecoration: "none",
+          }}
+        >
+          📸 @detalles_dankar
+        </a>
+
+        {/* WhatsApp directo */}
+        <a
+          href={`https://wa.me/${negocio.telefonoWhatsapp}`}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            color: "var(--tinta-suave)",
+            fontSize: "var(--t-sm)",
+            textDecoration: "none",
+          }}
+        >
+          💬 Escríbenos por WhatsApp
+        </a>
+
+        {/* Ubicación */}
+        <p
+          style={{
+            margin: 0,
+            fontSize: "var(--t-xs)",
+            color: "var(--tinta-suave)",
+          }}
+        >
+          📍 Pariaguán, Anzoátegui, Venezuela
+        </p>
+
+        {/* Horario */}
+        <p
+          style={{
+            margin: 0,
+            fontSize: "var(--t-xs)",
+            color: "var(--tinta-suave)",
+          }}
+        >
+          🕐 Lunes a sábado, 9:00 a 18:00
+        </p>
+
+        <hr
+          style={{
+            width: "100%",
+            border: "none",
+            borderTop: "1px solid var(--linea)",
+            margin: "8px 0",
+          }}
+        />
+
+        {/* Créditos */}
         <p
           style={{
             margin: 0,
@@ -118,13 +293,13 @@ export default function Tienda() {
           </a>
         </p>
 
+        {/* Admin oculto */}
         <a
           href="/admin/login"
           style={{
             fontSize: "var(--t-xs)",
             color: "var(--linea)",
             textDecoration: "none",
-            transition: "color 0.15s",
           }}
           onMouseEnter={(e) => (e.target.style.color = "var(--tinta-suave)")}
           onMouseLeave={(e) => (e.target.style.color = "var(--linea)")}
