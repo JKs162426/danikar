@@ -16,21 +16,7 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(
   cors({
-    origin: (origin, callback) => {
-      const permitidos = (process.env.ORIGENES_PERMITIDOS ?? "")
-        .split(",")
-        .map((o) => o.trim());
-      if (!origin || permitidos.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log(
-          "[cors] bloqueado:",
-          JSON.stringify(origin),
-          "| permitidos:",
-          JSON.stringify(permitidos)
-        );
-      }
-    },
+    origin: "https://dankar.vercel.app",
     credentials: true,
   })
 );
