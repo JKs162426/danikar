@@ -15,7 +15,7 @@ const app = express();
 // proxy y el limitador bloquearía a todo el mundo junto.
 app.set("trust proxy", 1);
 app.options(
-  "*",
+  "(.*)",
   cors({
     origin:
       process.env.ORIGENES_PERMITIDOS?.split(",").map((o) => o.trim()) ?? [],
