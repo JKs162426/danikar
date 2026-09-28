@@ -40,6 +40,17 @@ export default function Tienda() {
       }}
     >
       <header style={{ marginBottom: 24 }}>
+        <img
+          src="/logo.png"
+          alt="Detalles DanKar"
+          style={{
+            width: 80,
+            height: 80,
+            objectFit: "contain",
+            marginBottom: 8,
+          }}
+        />
+
         <h1 style={{ color: "#c2185b", margin: 0 }}>{negocio.nombre}</h1>
         <p style={{ color: "#666", margin: "4px 0" }}>{negocio.descripcion}</p>
         {negocio.ubicacion && (
