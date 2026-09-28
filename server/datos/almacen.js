@@ -1,70 +1,75 @@
-import { readFile, rename, mkdir, unlink, open } from "node:fs/promises";
-import path from "node:path";
+import { MongoClient } from "mongodb";
 import { config } from "../config/config.js";
 import { contenidoSchema } from "../config/esquema.js";
 
+// Un solo documento representa todo el contenido del sitio.
+// Lo identificamos con este ID fijo.
+const DOC_ID = "dankar-contenido";
+
+let cliente = null;
+let coleccion = null;
 let cache = null;
-let cola = Promise.resolve();
-
-// Encola cada operación para que nunca haya dos escrituras a la vez.
-// El segundo argumento de .then() mantiene la cola viva aunque una falle.
-function enCola(operacion) {
-  const resultado = cola.then(operacion, operacion);
-  cola = resultado.catch(() => {});
-  return resultado;
-}
-
-async function escribirAtomico(datos) {
-  const json = JSON.stringify(datos, null, 2);
-  const tmp = `${config.rutaDatos}.${process.pid}.${Date.now()}.tmp`;
-
-  await mkdir(path.dirname(config.rutaDatos), { recursive: true });
-
-  let manejador;
-  try {
-    manejador = await open(tmp, "w");
-    await manejador.writeFile(json, "utf8");
-    // Sin este sync, un corte de energía puede dejarte el archivo
-    // renombrado pero vacío.
-    await manejador.sync();
-  } finally {
-    await manejador?.close();
-  }
-
-  try {
-    await rename(tmp, config.rutaDatos);
-  } catch (error) {
-    await unlink(tmp).catch(() => {});
-    throw error;
-  }
-}
 
 export async function inicializarAlmacen() {
-  const crudo = await readFile(config.rutaDatos, "utf8");
-  cache = contenidoSchema.parse(JSON.parse(crudo));
+  cliente = new MongoClient(config.mongoUri);
+  await cliente.connect();
+
+  const db = cliente.db("dankar");
+  coleccion = db.collection("contenido");
+
+  // Buscamos el documento. Si no existe lo creamos con contenido inicial.
+  const doc = await coleccion.findOne({ _id: DOC_ID });
+
+  if (!doc) {
+    console.log("[almacen] no existe documento, creando contenido inicial...");
+    const inicial = contenidoSchema.parse({
+      negocio: {
+        nombre: "Detalles DanKar",
+        descripcion: "Cintillos, lazos, pulseras y muchas cosas más.",
+        telefonoWhatsapp: "584121234567",
+        instagram: "detalles_dankar",
+        ubicacion: "Pariaguán, Anzoátegui, Venezuela",
+        saludoPedido: "Hola, quiero hacer un pedido:",
+      },
+      categorias: ["lazos", "cintillos", "pulseras"],
+      productos: [],
+    });
+
+    await coleccion.insertOne({ _id: DOC_ID, ...inicial });
+    cache = inicial;
+  } else {
+    // Quitamos el _id de Mongo antes de validar con Zod.
+    const { _id, ...datos } = doc;
+    cache = contenidoSchema.parse(datos);
+  }
+
   console.log(
-    `[almacen] contenido cargado (${cache.productos.length} productos)`
+    `[almacen] conectado a MongoDB (${cache.productos.length} productos)`
   );
   return cache;
 }
 
 export function leerContenido() {
-  if (cache === null) {
-    throw new Error("El almacén no fue inicializado.");
-  }
+  if (cache === null) throw new Error("El almacén no fue inicializado.");
   return cache;
 }
 
-// El contenido ya debe venir validado. La cache solo se actualiza si el
-// disco respondió bien: así memoria y archivo nunca divergen.
-export function guardarContenido(contenidoValidado) {
-  return enCola(async () => {
-    const conMarca = {
-      ...contenidoValidado,
-      actualizadoEn: new Date().toISOString(),
-    };
-    await escribirAtomico(conMarca);
-    cache = conMarca;
-    return cache;
-  });
+export async function guardarContenido(contenidoValidado) {
+  const conMarca = {
+    ...contenidoValidado,
+    actualizadoEn: new Date().toISOString(),
+  };
+
+  await coleccion.replaceOne(
+    { _id: DOC_ID },
+    { _id: DOC_ID, ...conMarca },
+    { upsert: true }
+  );
+
+  cache = conMarca;
+  return cache;
+}
+
+export async function cerrarConexion() {
+  await cliente?.close();
 }

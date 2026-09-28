@@ -23,6 +23,8 @@ export const config = {
   sesionHoras: Number(process.env.SESION_HORAS ?? 12),
 
   passwordHash: requerido("ADMIN_PASSWORD_HASH"),
+
+  mongoUri: requerido("MONGODB_URI"),
 };
 
 export const esProduccion = config.entorno === "production";

@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import { inicializarAlmacen, cerrarConexion } from "./datos/almacen.js";
 
 import { config, esProduccion } from "./config/config.js";
 import { inicializarAlmacen } from "./datos/almacen.js";
@@ -58,6 +59,11 @@ app.use((error, req, res, next) => {
     // En producción no le regalamos stack traces a nadie.
     ...(esProduccion ? {} : { detalle: error.message }),
   });
+});
+
+process.on("SIGTERM", async () => {
+  await cerrarConexion();
+  process.exit(0);
 });
 
 try {
