@@ -23,8 +23,12 @@ app.use(
       if (!origin || permitidos.includes(origin)) {
         callback(null, true);
       } else {
-        console.log("[cors] bloqueado:", origin, "| permitidos:", permitidos);
-        callback(new Error("CORS: origen no permitido"));
+        console.log(
+          "[cors] bloqueado:",
+          JSON.stringify(origin),
+          "| permitidos:",
+          JSON.stringify(permitidos)
+        );
       }
     },
     credentials: true,
