@@ -3,6 +3,7 @@ import { useSesion } from "../contexto/SesionContext";
 import { useContenidoAdmin } from "../hooks/useContenidoAdmin";
 import ListaProductosAdmin from "../componentes/admin/ListaProductosAdmin";
 import FormularioProducto from "../componentes/admin/FormularioProducto";
+import FormularioNegocio from "../componentes/admin/FormularioNegocio";
 import "../estilos/admin.css";
 
 export default function Admin() {
@@ -86,9 +87,24 @@ export default function Admin() {
         )}
 
         {pestana === "negocio" && (
-          <p style={{ color: "var(--tinta-suave)" }}>
-            Editor de datos del negocio — siguiente paso.
-          </p>
+          <>
+            <div className="admin-seccion-header">
+              <h2>Datos del negocio</h2>
+            </div>
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: "var(--radio-lg)",
+                padding: 24,
+                boxShadow: "var(--sombra)",
+              }}
+            >
+              <FormularioNegocio
+                negocio={c.borrador.negocio}
+                onChange={(negocio) => c.editarNegocio(negocio)}
+              />
+            </div>
+          </>
         )}
       </main>
 
