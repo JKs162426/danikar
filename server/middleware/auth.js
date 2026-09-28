@@ -19,11 +19,9 @@ export function emitirToken() {
 
 export function opcionesCookie() {
   return {
-    httpOnly: true, // el JS del navegador no puede leerla -> inmune a XSS
-    secure: esProduccion || cookieCrossSite,
-    // Con dominios distintos, 'strict' hace que la cookie nunca se mande.
-    // 'none' lo resuelve, pero obliga a secure: true.
-    sameSite: cookieCrossSite ? "none" : "strict",
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
     maxAge: config.sesionHoras * 60 * 60 * 1000,
     path: "/",
   };
