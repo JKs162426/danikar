@@ -3,7 +3,6 @@ import cookieParser from "cookie-parser";
 import { inicializarAlmacen, cerrarConexion } from "./datos/almacen.js";
 
 import { config, esProduccion } from "./config/config.js";
-import { inicializarAlmacen } from "./datos/almacen.js";
 import publicas from "./rutas/publicas.js";
 import admin from "./rutas/admin.js";
 import { join } from "node:path";
