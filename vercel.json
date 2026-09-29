@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://danikar-backend.onrender.com/api/:path*"
+    },
+    {
+      "source": "/imagenes/:path*",
+      "destination": "https://danikar-backend.onrender.com/imagenes/:path*"
+    }
+  ]
+}

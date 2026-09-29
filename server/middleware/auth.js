@@ -21,7 +21,7 @@ export function opcionesCookie() {
   return {
     httpOnly: true,
     secure: true,
-    sameSite: "none",
+    sameSite: "strict",
     maxAge: config.sesionHoras * 60 * 60 * 1000,
     path: "/",
   };
