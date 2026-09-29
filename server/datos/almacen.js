@@ -1,6 +1,8 @@
 import { MongoClient } from "mongodb";
 import { config } from "../config/config.js";
 import { contenidoSchema } from "../config/esquema.js";
+import { mkdir } from "node:fs/promises";
+import path from "node:path";
 
 // Un solo documento representa todo el contenido del sitio.
 // Lo identificamos con este ID fijo.
@@ -11,6 +13,15 @@ let coleccion = null;
 let cache = null;
 
 export async function inicializarAlmacen() {
+  // Asegura que la carpeta de imágenes exista en cualquier entorno.
+  const carpetaImagenes = path.join(
+    process.cwd(),
+    "server",
+    "publico",
+    "imagenes"
+  );
+  await mkdir(carpetaImagenes, { recursive: true });
+
   cliente = new MongoClient(config.mongoUri);
   await cliente.connect();
 
