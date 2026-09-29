@@ -42,10 +42,6 @@ app.use(cookieParser());
 
 import { createRequire } from "node:module";
 
-app.use(
-  "/imagenes",
-  express.static(join(process.cwd(), "server", "publico", "imagenes"))
-);
 app.use("/api/archivos", archivos);
 
 app.get("/api/salud", (req, res) => res.json({ ok: true }));

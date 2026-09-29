@@ -1,43 +1,46 @@
 import { Router } from "express";
 import multer from "multer";
-import path from "node:path";
-import { randomBytes } from "node:crypto";
+import { v2 as cloudinary } from "cloudinary";
+import { Readable } from "node:stream";
 import { requiereAdmin } from "../middleware/auth.js";
 
-// En producción (Render) esta carpeta debe estar dentro del disco
-// persistente. Puedes controlarlo con la variable RUTA_PUBLICO.
-const CARPETA = process.env.RUTA_PUBLICO
-  ? path.join(process.env.RUTA_PUBLICO, "imagenes")
-  : path.join(process.cwd(), "server", "publico", "imagenes");
-
-const almacenamiento = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, CARPETA),
-  filename: (req, file, cb) => {
-    // Nombre aleatorio para evitar colisiones y no exponer el nombre original.
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, randomBytes(12).toString("hex") + ext);
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Multer en memoria: no toca el disco, manda el buffer directo a Cloudinary.
 const subir = multer({
-  storage: almacenamiento,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB máximo
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const permitidos = /jpeg|jpg|png|webp/;
     const esValido =
-      permitidos.test(path.extname(file.originalname).toLowerCase()) &&
+      permitidos.test(file.originalname.toLowerCase()) &&
       permitidos.test(file.mimetype);
-
     if (esValido) return cb(null, true);
     cb(new Error("Solo se permiten imágenes JPG, PNG o WebP."));
   },
 });
 
+function subirACloudinary(buffer) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "dankar" },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    Readable.from(buffer).pipe(stream);
+  });
+}
+
 const router = Router();
 
-// Solo el admin puede subir imágenes.
 router.post("/imagen", requiereAdmin, (req, res, next) => {
-  subir.single("imagen")(req, res, (err) => {
+  subir.single("imagen")(req, res, async (err) => {
     if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
       return res
         .status(400)
@@ -47,8 +50,13 @@ router.post("/imagen", requiereAdmin, (req, res, next) => {
     if (!req.file)
       return res.status(400).json({ error: "No se recibió ninguna imagen." });
 
-    // Devolvemos la URL pública que el frontend guarda en el producto.
-    return res.json({ url: `/imagenes/${req.file.filename}` });
+    try {
+      const resultado = await subirACloudinary(req.file.buffer);
+      // secure_url es HTTPS, siempre.
+      return res.json({ url: resultado.secure_url });
+    } catch (error) {
+      return next(error);
+    }
   });
 });
 
