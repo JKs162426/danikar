@@ -9,6 +9,16 @@ function requerido(nombre) {
   return valor;
 }
 
+// Un secreto corto se puede adivinar por fuerza bruta y con él se
+// fabrican sesiones de admin. Generar uno: openssl rand -hex 32
+function secretoJwt() {
+  const secreto = requerido("JWT_SECRET");
+  if (secreto.length < 32) {
+    console.warn("[config] JWT_SECRET es muy corto: usa al menos 32 caracteres.");
+  }
+  return secreto;
+}
+
 export const config = {
   puerto: Number(process.env.SERVER_PORT ?? 4000),
   entorno: process.env.NODE_ENV ?? "development",
@@ -19,7 +29,7 @@ export const config = {
       path.join(process.cwd(), "server", "datos", "contenido.json")
   ),
 
-  jwtSecret: requerido("JWT_SECRET"),
+  jwtSecret: secretoJwt(),
   sesionHoras: Number(process.env.SESION_HORAS ?? 12),
 
   passwordHash: requerido("ADMIN_PASSWORD_HASH"),
@@ -28,5 +38,3 @@ export const config = {
 };
 
 export const esProduccion = config.entorno === "production";
-// true cuando frontend y backend viven en dominios distintos (Vercel + Render).
-export const cookieCrossSite = process.env.COOKIE_CROSS_SITE === "true";

@@ -82,8 +82,10 @@ export function useContenidoAdmin() {
     setBorrador((b) => ({ ...b, productos }));
   }, []);
 
-  const editarCategorias = useCallback((categorias) => {
-    setBorrador((b) => ({ ...b, categorias }));
+  // Categorías y productos juntos: renombrar o eliminar una categoría
+  // también cambia a los productos que la usan.
+  const editarCatalogo = useCallback(({ categorias, productos }) => {
+    setBorrador((b) => ({ ...b, categorias, productos }));
   }, []);
 
   return {
@@ -97,6 +99,6 @@ export function useContenidoAdmin() {
     descartar,
     editarNegocio,
     editarProductos,
-    editarCategorias,
+    editarCatalogo,
   };
 }

@@ -11,6 +11,12 @@
   --tinta-suave: #6b5560;
   --linea: #e8d5de;
 
+  /* Verde oficial de WhatsApp, oscurecido para que el texto blanco
+     tenga contraste suficiente. */
+  --whatsapp: #128c4a;
+  --whatsapp-hondo: #0b6b37;
+  --peligro: #b91c1c;
+
   /* Tipografía */
   --display: "Fraunces", Georgia, serif;
   --cuerpo: "Karla", system-ui, sans-serif;

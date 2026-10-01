@@ -1,323 +1,252 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { obtenerContenidoPublico } from "../api/contenido";
+import { useCarrito } from "../hooks/useCarrito";
+import { enlaceWhatsapp, formatearPrecio } from "../utils/whatsapp";
 import ListaProductos from "../componentes/tienda/ListaProductos";
-import PedidoWhatsApp from "../componentes/tienda/PedidoWhatsApp";
+import OpcionesProducto from "../componentes/tienda/OpcionesProducto";
+import Carrito from "../componentes/tienda/Carrito";
+import "../estilos/tienda.css";
+
+const PASOS = [
+  {
+    emoji: "🎀",
+    titulo: "Elige tus productos",
+    texto: "Explora el catálogo y agrega a tu pedido lo que más te guste.",
+  },
+  {
+    emoji: "🎨",
+    titulo: "Color y tamaño",
+    texto: "Selecciona las opciones y agrega una nota si quieres personalizarlo.",
+  },
+  {
+    emoji: "💬",
+    titulo: "Envía tu pedido",
+    texto: "Te llevamos a WhatsApp con todo el resumen listo. Solo dale enviar.",
+  },
+];
 
 export default function Tienda() {
-  const [estado, setEstado] = useState({
-    cargando: true,
-    datos: null,
-    error: null,
-  });
-  const [categoria, setCategoria] = useState("todas");
-  const [pedido, setPedido] = useState(null);
+  const [estado, setEstado] = useState({ cargando: true, datos: null, error: null });
+  const [lento, setLento] = useState(false);
 
-  useEffect(() => {
+  const cargar = useCallback(() => {
+    let vigente = true;
+    setEstado({ cargando: true, datos: null, error: null });
+    setLento(false);
+    // El servidor gratuito "duerme" y tarda en despertar: avisamos.
+    const temporizador = setTimeout(() => vigente && setLento(true), 4000);
+
     obtenerContenidoPublico()
-      .then((datos) => setEstado({ cargando: false, datos, error: null }))
-      .catch((error) =>
-        setEstado({ cargando: false, datos: null, error: error.message })
-      );
+      .then((datos) => vigente && setEstado({ cargando: false, datos, error: null }))
+      .catch(
+        (error) =>
+          vigente && setEstado({ cargando: false, datos: null, error: error.message })
+      )
+      .finally(() => clearTimeout(temporizador));
+
+    return () => {
+      vigente = false;
+      clearTimeout(temporizador);
+    };
   }, []);
 
-  if (estado.cargando) return <p style={{ padding: 24 }}>Cargando…</p>;
-  if (estado.error) return <p style={{ padding: 24 }}>Error: {estado.error}</p>;
+  useEffect(cargar, [cargar]);
 
-  const { negocio, categorias, productos } = estado.datos;
+  if (estado.cargando) {
+    return (
+      <div className="tienda-estado">
+        <img src="/logo.png" alt="" className="tienda-estado-logo" />
+        <p>Cargando la tienda…</p>
+        {lento && <small>Estamos despertando el servidor, puede tardar unos segundos.</small>}
+      </div>
+    );
+  }
 
+  if (estado.error) {
+    return (
+      <div className="tienda-estado">
+        <img src="/logo.png" alt="" className="tienda-estado-logo" />
+        <p>No pudimos cargar la tienda.</p>
+        <small>{estado.error}</small>
+        <button type="button" onClick={cargar} className="boton boton-primario">
+          Reintentar
+        </button>
+      </div>
+    );
+  }
+
+  return <Catalogo {...estado.datos} />;
+}
+
+function Catalogo({ negocio, categorias, productos }) {
+  const [categoria, setCategoria] = useState("todas");
+  const [eligiendo, setEligiendo] = useState(null);
+  const [carritoAbierto, setCarritoAbierto] = useState(false);
+  const [aviso, setAviso] = useState(null);
+  const carrito = useCarrito(productos);
+
+  useEffect(() => {
+    if (!aviso) return undefined;
+    const t = setTimeout(() => setAviso(null), 2500);
+    return () => clearTimeout(t);
+  }, [aviso]);
+
+  // Solo mostramos categorías que tienen algo: un filtro vacío confunde.
+  const conProductos = categorias.filter((c) =>
+    productos.some((p) => p.categoria === c)
+  );
   const visibles =
     categoria === "todas"
       ? productos
       : productos.filter((p) => p.categoria === categoria);
 
-  return (
-    <main
-      style={{
-        padding: 24,
-        fontFamily: "system-ui",
-        maxWidth: 1100,
-        margin: "0 auto",
-      }}
-    >
-      <header style={{ marginBottom: 24 }}>
-        <img
-          src="/logo.png"
-          alt="Detalles DanKar"
-          style={{
-            width: 80,
-            height: 80,
-            objectFit: "contain",
-            marginBottom: 8,
-          }}
-        />
+  function agregar(eleccion) {
+    carrito.agregar(eleccion);
+    setAviso(`${eligiendo.nombre} se agregó a tu pedido`);
+    setEligiendo(null);
+  }
 
-        <h1 style={{ color: "#c2185b", margin: 0 }}>{negocio.nombre}</h1>
-        <p style={{ color: "#666", margin: "4px 0" }}>{negocio.descripcion}</p>
-        {negocio.ubicacion && (
-          <p style={{ color: "#999", fontSize: 14 }}>{negocio.ubicacion}</p>
-        )}
+  return (
+    <div className="tienda">
+      <div className="grosgrain" />
+
+      <header className="tienda-hero">
+        <img src="/logo.png" alt="" className="tienda-logo" />
+        <h1>{negocio.nombre}</h1>
+        {negocio.descripcion && <p className="tienda-lema">{negocio.descripcion}</p>}
+        {negocio.ubicacion && <p className="tienda-ubicacion">📍 {negocio.ubicacion}</p>}
       </header>
 
-      <section
-        style={{
-          display: "flex",
-          gap: 16,
-          marginBottom: 28,
-          flexWrap: "wrap",
-        }}
-      >
-        {[
-          {
-            emoji: "🎀",
-            titulo: "Elige tu producto",
-            texto: "Explora el catálogo y encuentra el que más te guste.",
-          },
-          {
-            emoji: "🎨",
-            titulo: "Elige color y tamaño",
-            texto:
-              "Selecciona las opciones y agrega una nota si quieres personalizarlo.",
-          },
-          {
-            emoji: "💬",
-            titulo: "Envía tu pedido",
-            texto:
-              "Te redirigimos a WhatsApp con todo listo. Solo dale enviar.",
-          },
-        ].map((paso, i) => (
-          <div
-            key={i}
-            style={{
-              flex: "1 1 180px",
-              background: "#fff",
-              borderRadius: "var(--radio-lg)",
-              padding: "20px 16px",
-              textAlign: "center",
-              boxShadow: "var(--sombra)",
-              borderTop: "3px solid var(--fucsia)",
-            }}
-          >
-            <div style={{ fontSize: 28, marginBottom: 8 }}>{paso.emoji}</div>
-            <h3
-              style={{
-                fontFamily: "var(--display)",
-                fontSize: "var(--t-base)",
-                color: "var(--tinta)",
-                margin: "0 0 6px",
-              }}
-            >
-              {paso.titulo}
-            </h3>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "var(--t-sm)",
-                color: "var(--tinta-suave)",
-                lineHeight: 1.5,
-              }}
-            >
-              {paso.texto}
+      <main className="tienda-main">
+        <section className="pasos" aria-label="Cómo pedir">
+          {PASOS.map((paso, i) => (
+            <div key={paso.titulo} className="paso">
+              <span className="paso-numero">{i + 1}</span>
+              <span className="paso-emoji" aria-hidden="true">
+                {paso.emoji}
+              </span>
+              <h3>{paso.titulo}</h3>
+              <p>{paso.texto}</p>
+            </div>
+          ))}
+        </section>
+
+        <aside className="banda-personalizado">
+          <span aria-hidden="true">✨</span>
+          <div>
+            <h3>¿Lo quieres personalizado?</h3>
+            <p>
+              Colores de tu colegio, el nombre de tu niña o cualquier detalle
+              especial. Agrégalo en la nota al elegir tu producto.
             </p>
           </div>
-        ))}
-      </section>
+        </aside>
 
-      <div
-        style={{
-          background:
-            "linear-gradient(135deg, var(--fucsia) 0%, var(--fucsia-hondo) 100%)",
-          borderRadius: "var(--radio-lg)",
-          padding: "20px 24px",
-          marginBottom: 24,
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ fontSize: 36 }}>✨</div>
-        <div style={{ flex: 1, minWidth: 200 }}>
-          <h3
-            style={{
-              fontFamily: "var(--display)",
-              color: "#fff",
-              margin: "0 0 4px",
-              fontSize: "var(--t-lg)",
-            }}
-          >
-            ¿Lo quieres personalizado?
-          </h3>
-          <p
-            style={{
-              margin: 0,
-              color: "rgba(255,255,255,0.85)",
-              fontSize: "var(--t-sm)",
-              lineHeight: 1.5,
-            }}
-          >
-            Colores de tu colegio, nombre de tu niña, o cualquier detalle
-            especial. Agrégalo en la nota al hacer tu pedido.
-          </p>
+        <h2 className="tienda-subtitulo">Catálogo</h2>
+
+        {conProductos.length > 1 && (
+          <nav className="filtros" aria-label="Categorías">
+            {["todas", ...conProductos].map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategoria(c)}
+                aria-pressed={categoria === c}
+                className={`filtro ${categoria === c ? "activo" : ""}`}
+              >
+                {c}
+              </button>
+            ))}
+          </nav>
+        )}
+
+        <ListaProductos productos={visibles} onElegir={setEligiendo} />
+      </main>
+
+      <Pie negocio={negocio} />
+
+      {carrito.unidades > 0 && !carritoAbierto && (
+        <button
+          type="button"
+          className="boton-carrito"
+          onClick={() => setCarritoAbierto(true)}
+        >
+          <span aria-hidden="true">🛍️</span>
+          Ver mi pedido
+          <span className="boton-carrito-cuenta">{carrito.unidades}</span>
+          <strong>{formatearPrecio(carrito.total)}</strong>
+        </button>
+      )}
+
+      {aviso && (
+        <div className="aviso" role="status">
+          {aviso}
         </div>
-      </div>
+      )}
 
-      <nav
-        style={{
-          display: "flex",
-          gap: 8,
-          flexWrap: "wrap",
-          marginBottom: 20,
-          justifyContent: "center",
-        }}
-      >
-        {["todas", ...categorias].map((c) => (
-          <button
-            key={c}
-            onClick={() => setCategoria(c)}
-            style={{
-              padding: "6px 14px",
-              borderRadius: 999,
-              border: "1px solid #c2185b",
-              background: categoria === c ? "#c2185b" : "transparent",
-              color: categoria === c ? "#fff" : "#c2185b",
-              cursor: "pointer",
-            }}
-          >
-            {c}
-          </button>
-        ))}
-      </nav>
-
-      <ListaProductos productos={visibles} onPedir={setPedido} />
-
-      {pedido && (
-        <PedidoWhatsApp
+      {eligiendo && (
+        <OpcionesProducto
           negocio={negocio}
-          producto={pedido}
-          onCerrar={() => setPedido(null)}
+          producto={eligiendo}
+          onAgregar={agregar}
+          onCerrar={() => setEligiendo(null)}
         />
       )}
 
-      <footer
-        style={{
-          marginTop: 60,
-          padding: "32px 24px 24px",
-          borderTop: "1px solid var(--linea)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 12,
-          textAlign: "center",
-        }}
-      >
-        {/* Nombre del negocio */}
-        <p
-          style={{
-            margin: 0,
-            fontFamily: "var(--display)",
-            fontSize: "var(--t-lg)",
-            color: "var(--fucsia)",
-          }}
-        >
-          {negocio.nombre}
-        </p>
-
-        {/* Instagram */}
-        <a
-          href="https://instagram.com/detalles_dankar"
-          target="_blank"
-          rel="noreferrer"
-          style={{
-            color: "var(--tinta-suave)",
-            fontSize: "var(--t-sm)",
-            textDecoration: "none",
-          }}
-        >
-          📸 @detalles_dankar
-        </a>
-
-        {/* WhatsApp directo */}
-        <a
-          href={`https://wa.me/${negocio.telefonoWhatsapp}`}
-          target="_blank"
-          rel="noreferrer"
-          style={{
-            color: "var(--tinta-suave)",
-            fontSize: "var(--t-sm)",
-            textDecoration: "none",
-          }}
-        >
-          💬 Escríbenos por WhatsApp
-        </a>
-
-        {/* Ubicación */}
-        <p
-          style={{
-            margin: 0,
-            fontSize: "var(--t-xs)",
-            color: "var(--tinta-suave)",
-          }}
-        >
-          📍 Pariaguán, Anzoátegui, Venezuela
-        </p>
-
-        {/* Horario */}
-        <p
-          style={{
-            margin: 0,
-            fontSize: "var(--t-xs)",
-            color: "var(--tinta-suave)",
-          }}
-        >
-          🕐 Lunes a sábado, 9:00 a 18:00
-        </p>
-
-        <hr
-          style={{
-            width: "100%",
-            border: "none",
-            borderTop: "1px solid var(--linea)",
-            margin: "8px 0",
-          }}
+      {carritoAbierto && (
+        <Carrito
+          negocio={negocio}
+          carrito={carrito}
+          onCerrar={() => setCarritoAbierto(false)}
         />
+      )}
+    </div>
+  );
+}
 
-        {/* Créditos */}
-        <p
-          style={{
-            margin: 0,
-            fontSize: "var(--t-xs)",
-            color: "var(--tinta-suave)",
-          }}
-        >
-          Desarrollado por{" "}
+function Pie({ negocio }) {
+  const whatsapp = enlaceWhatsapp(negocio.telefonoWhatsapp);
+
+  return (
+    <footer className="tienda-pie">
+      <p className="tienda-pie-nombre">{negocio.nombre}</p>
+
+      <div className="tienda-pie-enlaces">
+        {negocio.instagram && (
           <a
-            href="https://github.com/JKs162426"
+            href={`https://instagram.com/${encodeURIComponent(negocio.instagram)}`}
             target="_blank"
-            rel="noreferrer"
-            style={{
-              color: "var(--fucsia)",
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
+            rel="noopener noreferrer"
           >
-            Jesús Figueroa
+            📸 @{negocio.instagram}
           </a>
-        </p>
+        )}
+        {whatsapp && (
+          <a href={whatsapp} target="_blank" rel="noopener noreferrer">
+            💬 Escríbenos por WhatsApp
+          </a>
+        )}
+      </div>
 
-        {/* Admin oculto */}
+      {negocio.ubicacion && <p>📍 {negocio.ubicacion}</p>}
+      {negocio.horario && <p>🕐 {negocio.horario}</p>}
+
+      <hr />
+
+      <p>
+        Desarrollado por{" "}
         <a
-          href="/admin/login"
-          style={{
-            fontSize: "var(--t-xs)",
-            color: "var(--linea)",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => (e.target.style.color = "var(--tinta-suave)")}
-          onMouseLeave={(e) => (e.target.style.color = "var(--linea)")}
+          href="https://github.com/JKs162426"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="tienda-pie-credito"
         >
-          Administrar
+          Jesús Figueroa
         </a>
-      </footer>
-    </main>
+      </p>
+      <a href="/admin/login" className="tienda-pie-admin">
+        Administrar
+      </a>
+    </footer>
   );
 }

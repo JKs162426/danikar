@@ -23,7 +23,21 @@ export const productoSchema = z.object({
   // Solo aplica a lo que se sujeta al cabello. Una pulsera lo deja vacío.
   tipoAgarre: z.enum(TIPOS_AGARRE).nullable().default(null),
 
-  imagenes: z.array(z.string().trim().max(500)).max(8).default([]),
+  // Solo URLs https (Cloudinary) o las rutas locales viejas de /imagenes/.
+  // Evita que "javascript:" o rutas raras terminen en un src público.
+  imagenes: z
+    .array(
+      z
+        .string()
+        .trim()
+        .max(500)
+        .regex(
+          /^(https:\/\/|\/imagenes\/)[^\s"'<>]+$/,
+          "La imagen debe ser una URL https"
+        )
+    )
+    .max(8)
+    .default([]),
   personalizable: z.boolean().default(false),
   disponible: z.boolean().default(true),
 });
@@ -36,8 +50,23 @@ export const negocioSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{8,15}$/, "Solo dígitos con código de país"),
-  instagram: z.string().trim().max(100).default(""),
+  // Se guarda solo el usuario. Si pegan "@usuario" o la URL del perfil,
+  // lo limpiamos en vez de rechazarlo.
+  instagram: z
+    .string()
+    .trim()
+    .transform((v) =>
+      v
+        .replace(/^https?:\/\/(www\.)?instagram\.com\//i, "")
+        .replace(/^@/, "")
+        .replace(/[/?#].*$/, "")
+    )
+    .pipe(
+      z.string().regex(/^[A-Za-z0-9._]{0,30}$/, "Usuario de Instagram inválido")
+    )
+    .default(""),
   ubicacion: z.string().trim().max(300).default(""),
+  horario: z.string().trim().max(120).default("Lunes a sábado, 9:00 a 18:00"),
   saludoPedido: z
     .string()
     .trim()
@@ -48,7 +77,14 @@ export const negocioSchema = z.object({
 export const contenidoSchema = z
   .object({
     negocio: negocioSchema,
-    categorias: z.array(z.string().trim().min(1).max(60)).min(1).max(50),
+    categorias: z
+      .array(z.string().trim().min(1).max(60))
+      .min(1)
+      .max(50)
+      .refine(
+        (lista) => new Set(lista.map((c) => c.toLowerCase())).size === lista.length,
+        "Hay categorías repetidas"
+      ),
     productos: z.array(productoSchema).max(500).default([]),
     actualizadoEn: z.string().datetime().optional(),
   })

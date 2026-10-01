@@ -1,11 +1,18 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { config, esProduccion, cookieCrossSite } from "../config/config.js";
+import { config } from "../config/config.js";
 
 export const NOMBRE_COOKIE = "sesion_admin";
 
+// Fijamos el algoritmo al firmar y al verificar: así nadie puede colar
+// un token con "alg: none" u otro algoritmo que no esperamos.
+const ALGORITMO = "HS256";
+
 export async function credencialesValidas(password) {
+  // bcrypt solo mira los primeros 72 bytes; algo más largo es ruido
+  // (o alguien intentando cansar al servidor).
   if (typeof password !== "string" || password.length === 0) return false;
+  if (password.length > 200) return false;
   // bcrypt.compare es de tiempo constante: no filtra información
   // por cuánto tarda en responder.
   return bcrypt.compare(password, config.passwordHash);
@@ -13,6 +20,7 @@ export async function credencialesValidas(password) {
 
 export function emitirToken() {
   return jwt.sign({ rol: "admin" }, config.jwtSecret, {
+    algorithm: ALGORITMO,
     expiresIn: `${config.sesionHoras}h`,
   });
 }
@@ -32,7 +40,9 @@ export function requiereAdmin(req, res, next) {
   if (!token) return res.status(401).json({ error: "No autenticado" });
 
   try {
-    const payload = jwt.verify(token, config.jwtSecret);
+    const payload = jwt.verify(token, config.jwtSecret, {
+      algorithms: [ALGORITMO],
+    });
     if (payload.rol !== "admin") {
       return res.status(403).json({ error: "Sin permisos" });
     }

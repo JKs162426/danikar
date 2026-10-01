@@ -1,23 +1,19 @@
 import TarjetaProducto from "./TarjetaProducto";
 
-export default function ListaProductos({ productos, onPedir }) {
+export default function ListaProductos({ productos, onElegir }) {
   if (productos.length === 0) {
-    return <p style={{ color: "#666" }}>No hay productos en esta categoría.</p>;
+    return (
+      <p className="lista-vacia">No hay productos en esta categoría todavía.</p>
+    );
   }
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-        gap: 16,
-      }}
-    >
+    <div className="lista-productos">
       {productos.map((producto) => (
         <TarjetaProducto
           key={producto.id}
           producto={producto}
-          onPedir={onPedir}
+          onElegir={onElegir}
         />
       ))}
     </div>

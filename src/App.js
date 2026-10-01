@@ -1,15 +1,25 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { ProveedorSesion } from "./contexto/SesionContext";
 import RutaProtegida from "./componentes/admin/RutaProtegida";
 import Tienda from "./paginas/Tienda";
 import Login from "./paginas/Login";
 import Admin from "./paginas/Admin";
 
-export default function App() {
+// La sesión solo importa en /admin. Si envolviera toda la app, cada
+// clienta que abre la tienda dispararía una verificación inútil (un 401).
+function ConSesion() {
   return (
     <ProveedorSesion>
-      <Routes>
-        <Route path="/" element={<Tienda />} />
+      <Outlet />
+    </ProveedorSesion>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Tienda />} />
+      <Route element={<ConSesion />}>
         <Route path="/admin/login" element={<Login />} />
         <Route
           path="/admin"
@@ -19,8 +29,8 @@ export default function App() {
             </RutaProtegida>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </ProveedorSesion>
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

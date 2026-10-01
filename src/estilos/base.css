@@ -13,7 +13,6 @@ body {
   font-family: var(--cuerpo);
   font-size: var(--t-base);
   line-height: 1.55;
-  text-align: center;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -44,6 +43,68 @@ textarea {
 :focus-visible {
   outline: 2px solid var(--azul-rey);
   outline-offset: 2px;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ── Botones compartidos ── */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  padding: 12px 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+}
+.boton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.boton-ancho {
+  width: 100%;
+}
+.boton-primario {
+  background: var(--fucsia);
+  color: #fff;
+}
+.boton-primario:hover:not(:disabled) {
+  background: var(--fucsia-hondo);
+}
+.boton-secundario {
+  background: #fff;
+  color: var(--fucsia);
+  border-color: var(--fucsia);
+}
+.boton-secundario:hover {
+  background: var(--papel-hondo);
+}
+.boton-whatsapp {
+  background: var(--whatsapp);
+  color: #fff;
+}
+.boton-whatsapp:hover {
+  background: var(--whatsapp-hondo);
+}
+.boton-enlace {
+  background: none;
+  color: var(--tinta-suave);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.boton-enlace:hover {
+  color: var(--tinta);
 }
 
 @media (prefers-reduced-motion: reduce) {

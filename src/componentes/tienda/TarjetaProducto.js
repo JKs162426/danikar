@@ -1,99 +1,68 @@
 import { useState } from "react";
-import { formatearPrecio } from "../../utils/whatsapp";
+import { formatearPrecio, precioMinimo } from "../../utils/whatsapp";
 
-export default function TarjetaProducto({ producto, onPedir }) {
-  const precioMinimo = Math.min(...producto.variantes.map((v) => v.precio));
+export default function TarjetaProducto({ producto, onElegir }) {
   const [imagenActiva, setImagenActiva] = useState(0);
+  const minimo = precioMinimo(producto);
+  const { imagenes } = producto;
 
   return (
-    <article
-      style={{
-        border: "1px solid #f0d5e4",
-        borderRadius: 12,
-        padding: 16,
-        background: "#fff",
-      }}
-    >
-      {producto.imagenes.length > 0 && (
-        <>
-          {/* Imagen principal */}
+    <article className="tarjeta">
+      <div className="tarjeta-foto">
+        {imagenes.length > 0 ? (
           <img
-            src={producto.imagenes[imagenActiva]}
+            src={imagenes[imagenActiva]}
             alt={producto.nombre}
-            style={{
-              width: "100%",
-              aspectRatio: "1",
-              objectFit: "cover",
-              borderRadius: 8,
-              transition: "opacity 0.2s",
-            }}
+            loading="lazy"
           />
+        ) : (
+          <span className="tarjeta-foto-vacia" aria-hidden="true">
+            🎀
+          </span>
+        )}
+        {producto.personalizable && (
+          <span className="tarjeta-etiqueta">Personalizable</span>
+        )}
+      </div>
 
-          {/* Miniaturas — solo si hay más de una */}
-          {producto.imagenes.length > 1 && (
-            <div
-              style={{
-                display: "flex",
-                gap: 6,
-                marginTop: 8,
-                flexWrap: "wrap",
-              }}
+      {/* Miniaturas: solo si hay más de una */}
+      {imagenes.length > 1 && (
+        <div className="tarjeta-miniaturas">
+          {imagenes.map((url, i) => (
+            <button
+              key={url}
+              type="button"
+              onClick={() => setImagenActiva(i)}
+              aria-label={`Ver foto ${i + 1}`}
+              aria-pressed={imagenActiva === i}
+              className={imagenActiva === i ? "activa" : ""}
             >
-              {producto.imagenes.map((url, i) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt={`${producto.nombre} ${i + 1}`}
-                  onClick={() => setImagenActiva(i)}
-                  style={{
-                    width: 48,
-                    height: 48,
-                    objectFit: "cover",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    border:
-                      imagenActiva === i
-                        ? "2px solid var(--fucsia)"
-                        : "2px solid transparent",
-                    opacity: imagenActiva === i ? 1 : 0.6,
-                    transition: "opacity 0.15s, border-color 0.15s",
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </>
+              <img src={url} alt="" loading="lazy" />
+            </button>
+          ))}
+        </div>
       )}
 
-      <h3 style={{ margin: "12px 0 4px" }}>{producto.nombre}</h3>
+      <div className="tarjeta-cuerpo">
+        <p className="tarjeta-categoria">{producto.categoria}</p>
+        <h3>{producto.nombre}</h3>
+        {producto.descripcion && (
+          <p className="tarjeta-descripcion">{producto.descripcion}</p>
+        )}
 
-      {producto.descripcion && (
-        <p style={{ margin: "0 0 8px", fontSize: 14, color: "#666" }}>
-          {producto.descripcion}
+        <p className="tarjeta-precio">
+          {producto.variantes.length > 1 && <small>Desde </small>}
+          {formatearPrecio(minimo)}
         </p>
-      )}
 
-      <p style={{ margin: "0 0 12px", fontWeight: 600, color: "#c2185b" }}>
-        {producto.variantes.length > 1
-          ? `Desde ${formatearPrecio(precioMinimo)}`
-          : formatearPrecio(precioMinimo)}
-      </p>
-
-      <button
-        onClick={() => onPedir(producto)}
-        style={{
-          width: "100%",
-          padding: 10,
-          border: "none",
-          borderRadius: 8,
-          background: "#c2185b",
-          color: "#fff",
-          fontSize: 15,
-          cursor: "pointer",
-        }}
-      >
-        Pedir por WhatsApp
-      </button>
+        <button
+          type="button"
+          onClick={() => onElegir(producto)}
+          className="boton boton-primario boton-ancho"
+        >
+          Elegir opciones
+        </button>
+      </div>
     </article>
   );
 }

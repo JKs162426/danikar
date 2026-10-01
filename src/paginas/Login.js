@@ -11,7 +11,7 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [enviando, setEnviando] = useState(false);
 
-  if (verificando) return <p style={{ padding: 24 }}>Verificando…</p>;
+  if (verificando) return <p className="admin-estado">Verificando…</p>;
   if (autenticado) return <Navigate to="/admin" replace />;
 
   async function manejarEnvio(e) {
@@ -50,6 +50,8 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••"
+              autoComplete="current-password"
+              maxLength={200}
               autoFocus
               className="login-inp"
             />

@@ -42,6 +42,12 @@ router.post("/logout", (req, res) => {
 // A partir de acá, todo exige sesión.
 router.use(requiereAdmin);
 
+// Nada del panel debe quedar guardado en cachés del navegador o proxies.
+router.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+
 router.get("/sesion", (req, res) => {
   res.json({ autenticado: true });
 });

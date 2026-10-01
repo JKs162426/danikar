@@ -15,12 +15,15 @@ export class ErrorApi extends Error {
 
 export async function pedir(ruta, opciones = {}) {
   let respuesta;
+  // Con FormData el navegador pone el Content-Type con su boundary;
+  // si lo forzamos a JSON, la subida llega rota.
+  const esFormulario = opciones.body instanceof FormData;
 
   try {
     respuesta = await fetch(`${BASE}${ruta}`, {
       // Sin esto el navegador no manda ni recibe la cookie de sesión.
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: esFormulario ? {} : { "Content-Type": "application/json" },
       ...opciones,
     });
   } catch {

@@ -4,7 +4,14 @@ import { useContenidoAdmin } from "../hooks/useContenidoAdmin";
 import ListaProductosAdmin from "../componentes/admin/ListaProductosAdmin";
 import FormularioProducto from "../componentes/admin/FormularioProducto";
 import FormularioNegocio from "../componentes/admin/FormularioNegocio";
+import GestorCategorias from "../componentes/admin/GestorCategorias";
 import "../estilos/admin.css";
+
+const PESTANAS = {
+  productos: "Productos",
+  categorias: "Categorías",
+  negocio: "Datos del negocio",
+};
 
 export default function Admin() {
   const { salir } = useSesion();
@@ -12,9 +19,9 @@ export default function Admin() {
   const [pestana, setPestana] = useState("productos");
   const [productoEditando, setProductoEditando] = useState(null); // null | {} | producto
 
-  if (c.estado === "cargando") return <p style={{ padding: 24 }}>Cargando…</p>;
+  if (c.estado === "cargando") return <p className="admin-estado">Cargando…</p>;
   if (c.estado === "error")
-    return <p style={{ padding: 24 }}>Error: {c.error}</p>;
+    return <p className="admin-estado">Error: {c.error}</p>;
 
   function manejarGuardarProducto(producto) {
     const lista = c.borrador.productos;
@@ -54,13 +61,13 @@ export default function Admin() {
       </header>
 
       <nav className="admin-tabs">
-        {["productos", "negocio"].map((p) => (
+        {Object.entries(PESTANAS).map(([clave, titulo]) => (
           <button
-            key={p}
-            onClick={() => setPestana(p)}
-            className={`admin-tab ${pestana === p ? "activo" : ""}`}
+            key={clave}
+            onClick={() => setPestana(clave)}
+            className={`admin-tab ${pestana === clave ? "activo" : ""}`}
           >
-            {p === "productos" ? "Productos" : "Datos del negocio"}
+            {titulo}
           </button>
         ))}
       </nav>
@@ -86,19 +93,27 @@ export default function Admin() {
           </>
         )}
 
+        {pestana === "categorias" && (
+          <>
+            <div className="admin-seccion-header">
+              <h2>Categorías ({c.borrador.categorias.length})</h2>
+            </div>
+            <div className="admin-tarjeta">
+              <GestorCategorias
+                categorias={c.borrador.categorias}
+                productos={c.borrador.productos}
+                onCambiar={c.editarCatalogo}
+              />
+            </div>
+          </>
+        )}
+
         {pestana === "negocio" && (
           <>
             <div className="admin-seccion-header">
               <h2>Datos del negocio</h2>
             </div>
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: "var(--radio-lg)",
-                padding: 24,
-                boxShadow: "var(--sombra)",
-              }}
-            >
+            <div className="admin-tarjeta">
               <FormularioNegocio
                 negocio={c.borrador.negocio}
                 onChange={(negocio) => c.editarNegocio(negocio)}
@@ -145,7 +160,7 @@ export default function Admin() {
         <div className="admin-error-flotante">
           <strong>{c.error}</strong>
           {c.erroresCampo && (
-            <ul style={{ margin: "6px 0 0", paddingLeft: 16 }}>
+            <ul>
               {c.erroresCampo.map((d, i) => (
                 <li key={i}>
                   {d.campo}: {d.mensaje}

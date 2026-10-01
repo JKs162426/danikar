@@ -2,14 +2,16 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { inicializarAlmacen, cerrarConexion } from "./datos/almacen.js";
 
+import cors from "cors";
 import { config, esProduccion } from "./config/config.js";
 import publicas from "./rutas/publicas.js";
 import admin from "./rutas/admin.js";
-import { join } from "node:path";
 import archivos from "./rutas/archivos.js";
-import cors from "cors";
 
 const app = express();
+
+// No anunciamos que esto corre en Express.
+app.disable("x-powered-by");
 
 // Render y Fly ponen un proxy delante. Sin esto req.ip es la IP del
 // proxy y el limitador bloquearía a todo el mundo junto.
@@ -24,6 +26,26 @@ app.use(
     credentials: true,
   })
 );
+
+// Cabeceras de seguridad. El backend solo sirve JSON, así que la CSP
+// puede ser la más estricta posible: no carga nada ni se deja enmarcar.
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'none'; frame-ancestors 'none'"
+  );
+  res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+  if (esProduccion) {
+    res.setHeader(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains"
+    );
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   // Si las cabeceras pesan más de 8 KB, casi siempre son cookies basura.
@@ -40,8 +62,6 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 
-import { createRequire } from "node:module";
-
 app.use("/api/archivos", archivos);
 
 app.get("/api/salud", (req, res) => res.json({ ok: true }));
@@ -51,8 +71,15 @@ app.use("/api/admin", admin);
 app.use((req, res) => res.status(404).json({ error: "Ruta no encontrada" }));
 
 app.use((error, req, res, next) => {
+  // JSON mal formado: es culpa del cliente, no un 500.
+  if (error.type === "entity.parse.failed") {
+    return res.status(400).json({ error: "JSON inválido" });
+  }
+  if (error.type === "entity.too.large") {
+    return res.status(413).json({ error: "El contenido es demasiado grande" });
+  }
   console.error("[error]", error);
-  res.status(500).json({
+  return res.status(500).json({
     error: "Error interno",
     // En producción no le regalamos stack traces a nadie.
     ...(esProduccion ? {} : { detalle: error.message }),

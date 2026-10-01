@@ -6,10 +6,11 @@ Desarrollado para un cliente real en producción.
 ## Características
 
 - Catálogo público con filtros por categoría
-- Pedidos directos por WhatsApp con resumen automático
+- Carrito de pedido: varios productos en un solo mensaje de WhatsApp (se guarda en el navegador)
 - Panel de administración protegido con JWT
-- Subida de imágenes con Multer
-- Contenido persistente en JSON con escritura atómica
+- Gestión de categorías: crear, renombrar, ordenar y eliminar (moviendo sus productos)
+- Subida de imágenes a Cloudinary con validación del contenido real del archivo
+- Contenido persistente en MongoDB, validado con Zod
 
 ## Stack
 
@@ -21,6 +22,12 @@ Desarrollado para un cliente real en producción.
 ## Variables de entorno
 
 Ver `.env.example` en la raíz.
+
+## Tests
+
+```bash
+CI=true npm test
+```
 
 ## Desarrollado por
 
