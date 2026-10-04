@@ -117,7 +117,7 @@ export default function PieTienda({ negocio }) {
         <p className="pie-credito">
           © {new Date().getFullYear()} {negocio.nombre} · Desarrollado por{" "}
           <a
-            href="https:/jfigueroa.dev"
+            href="https://jfigueroa.dev"
             target="_blank"
             rel="noopener noreferrer"
           >
