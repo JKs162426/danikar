@@ -73,9 +73,23 @@
 /* ── Cómo pedir ── */
 .pasos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--e-4);
   margin-bottom: var(--e-6);
+}
+/* En pantallas angostas: los pasos 1 y 2 lado a lado y el 3 debajo,
+   a todo el ancho. */
+@media (max-width: 720px) {
+  .pasos {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--e-3);
+  }
+  .paso:last-child {
+    grid-column: 1 / -1;
+  }
+  .paso {
+    padding: var(--e-6) var(--e-3) var(--e-4);
+  }
 }
 .paso {
   position: relative;

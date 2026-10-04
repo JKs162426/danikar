@@ -58,7 +58,9 @@ export default function PieTienda({ negocio }) {
               {negocio.instagram && (
                 <li>
                   <a
-                    href={`https://instagram.com/${encodeURIComponent(negocio.instagram)}`}
+                    href={`https://instagram.com/${encodeURIComponent(
+                      negocio.instagram
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -114,7 +116,11 @@ export default function PieTienda({ negocio }) {
 
         <p className="pie-credito">
           © {new Date().getFullYear()} {negocio.nombre} · Desarrollado por{" "}
-          <a href="https://github.com/JKs162426" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https:/jfigueroa.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Jesús Figueroa
           </a>
           {/* Discreto a propósito: es para la dueña, no para las clientas. */}
