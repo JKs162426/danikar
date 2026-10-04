@@ -749,6 +749,17 @@
   color: var(--fucsia-claro);
   font-weight: 700;
 }
+.pie-credito .pie-admin {
+  display: block;
+  width: fit-content;
+  margin: var(--e-2) auto 0;
+  padding: var(--e-1) var(--e-2);
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 400;
+}
+.pie-credito .pie-admin:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
 
 @media (max-width: 560px) {
   .pie-llamado {

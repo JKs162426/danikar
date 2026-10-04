@@ -117,6 +117,10 @@ export default function PieTienda({ negocio }) {
           <a href="https://github.com/JKs162426" target="_blank" rel="noopener noreferrer">
             Jesús Figueroa
           </a>
+          {/* Discreto a propósito: es para la dueña, no para las clientas. */}
+          <a href="/admin/login" className="pie-admin">
+            Administrar
+          </a>
         </p>
       </footer>
     </>
