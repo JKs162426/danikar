@@ -2,11 +2,8 @@
   "short_name": "DanKar",
   "name": "Detalles DanKar",
   "icons": [
-    {
-      "src": "logo.png",
-      "type": "image/png",
-      "sizes": "any"
-    }
+    { "src": "icono-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "icono-512.png", "type": "image/png", "sizes": "512x512" }
   ],
   "start_url": "/",
   "display": "standalone",
