@@ -642,54 +642,131 @@
   animation: aparecer 0.2s ease-out;
 }
 
+/* ── Llamado final ── */
+.pie-llamado {
+  /* Mismo ancho que el catálogo, con margen lateral en el teléfono. */
+  margin: 0 max(var(--e-4), calc((100% - 1100px) / 2 + var(--e-4))) var(--e-12);
+  padding: var(--e-8) var(--e-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-6);
+  flex-wrap: wrap;
+  border-radius: var(--radio-lg);
+  background: var(--papel-hondo);
+  border: 1px dashed var(--fucsia);
+}
+.pie-llamado h2 {
+  font-size: var(--t-xl);
+  color: var(--fucsia-hondo);
+}
+.pie-llamado p {
+  margin: var(--e-1) 0 0;
+  color: var(--tinta-suave);
+}
+.pie-llamado .boton {
+  padding: 14px 28px;
+  font-size: var(--t-lg);
+}
+
 /* ── Pie ── */
-.tienda-pie {
+.pie {
+  background: var(--tinta);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: var(--t-sm);
+  /* Espacio para que el botón flotante del pedido no tape el crédito. */
+  padding-bottom: 96px;
+}
+.pie-columnas {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--e-12) var(--e-4) var(--e-8);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--e-8);
+}
+.pie h3 {
+  margin-bottom: var(--e-3);
+  font-family: var(--cuerpo);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fucsia-claro);
+}
+.pie ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--e-2);
-  padding: var(--e-8) var(--e-4) 96px;
-  border-top: 1px solid var(--linea);
-  background: #fff;
-  text-align: center;
-  font-size: var(--t-sm);
-  color: var(--tinta-suave);
+  gap: var(--e-3);
 }
-.tienda-pie p {
-  margin: 0;
-}
-.tienda-pie-nombre {
-  font-family: var(--display);
-  font-size: var(--t-lg);
-  color: var(--fucsia);
-}
-.tienda-pie-enlaces {
+.pie li,
+.pie li a {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--e-2) var(--e-6);
+  align-items: flex-start;
+  gap: var(--e-2);
 }
-.tienda-pie a {
-  color: var(--tinta);
+.pie li svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--fucsia-claro);
+}
+.pie a {
+  color: #fff;
   text-decoration: none;
 }
-.tienda-pie a:hover {
-  color: var(--fucsia);
+.pie a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
-.tienda-pie hr {
-  width: min(100%, 320px);
-  border: none;
-  border-top: 1px solid var(--linea);
-  margin: var(--e-2) 0;
+.pie-marca img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: var(--e-3);
 }
-.tienda-pie .tienda-pie-credito {
-  color: var(--fucsia);
+.pie-marca p {
+  margin: 0;
+}
+.pie-nombre {
+  font-family: var(--display);
+  font-size: var(--t-lg);
+  color: #fff;
+  margin-bottom: var(--e-1) !important;
+}
+.pie-credito {
+  /* Alineado con el contenido de las columnas de arriba. */
+  margin: 0 max(var(--e-4), calc((100% - 1100px) / 2 + var(--e-4)));
+  padding: var(--e-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+  font-size: var(--t-xs);
+  color: rgba(255, 255, 255, 0.5);
+}
+.pie-credito a {
+  color: var(--fucsia-claro);
   font-weight: 700;
 }
-.tienda-pie .tienda-pie-admin {
-  font-size: var(--t-xs);
-  color: var(--linea);
-}
-.tienda-pie .tienda-pie-admin:hover {
-  color: var(--tinta-suave);
+
+@media (max-width: 560px) {
+  .pie-llamado {
+    flex-direction: column;
+    text-align: center;
+  }
+  .pie-llamado .boton {
+    width: 100%;
+  }
+  .pie-columnas {
+    text-align: center;
+  }
+  .pie-marca img {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .pie li,
+  .pie li a {
+    justify-content: center;
+  }
 }

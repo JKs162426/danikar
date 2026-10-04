@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { obtenerContenidoPublico } from "../api/contenido";
 import { useCarrito } from "../hooks/useCarrito";
-import { enlaceWhatsapp, formatearPrecio } from "../utils/whatsapp";
+import { formatearPrecio } from "../utils/whatsapp";
 import ListaProductos from "../componentes/tienda/ListaProductos";
 import OpcionesProducto from "../componentes/tienda/OpcionesProducto";
 import Carrito from "../componentes/tienda/Carrito";
+import PieTienda from "../componentes/tienda/PieTienda";
 import "../estilos/tienda.css";
 
 const PASOS = [
@@ -163,7 +164,7 @@ function Catalogo({ negocio, categorias, productos }) {
         <ListaProductos productos={visibles} onElegir={setEligiendo} />
       </main>
 
-      <Pie negocio={negocio} />
+      <PieTienda negocio={negocio} />
 
       {carrito.unidades > 0 && !carritoAbierto && (
         <button
@@ -201,52 +202,5 @@ function Catalogo({ negocio, categorias, productos }) {
         />
       )}
     </div>
-  );
-}
-
-function Pie({ negocio }) {
-  const whatsapp = enlaceWhatsapp(negocio.telefonoWhatsapp);
-
-  return (
-    <footer className="tienda-pie">
-      <p className="tienda-pie-nombre">{negocio.nombre}</p>
-
-      <div className="tienda-pie-enlaces">
-        {negocio.instagram && (
-          <a
-            href={`https://instagram.com/${encodeURIComponent(negocio.instagram)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            📸 @{negocio.instagram}
-          </a>
-        )}
-        {whatsapp && (
-          <a href={whatsapp} target="_blank" rel="noopener noreferrer">
-            💬 Escríbenos por WhatsApp
-          </a>
-        )}
-      </div>
-
-      {negocio.ubicacion && <p>📍 {negocio.ubicacion}</p>}
-      {negocio.horario && <p>🕐 {negocio.horario}</p>}
-
-      <hr />
-
-      <p>
-        Desarrollado por{" "}
-        <a
-          href="https://github.com/JKs162426"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="tienda-pie-credito"
-        >
-          Jesús Figueroa
-        </a>
-      </p>
-      <a href="/admin/login" className="tienda-pie-admin">
-        Administrar
-      </a>
-    </footer>
   );
 }

@@ -75,6 +75,34 @@ export default function FormularioNegocio({ negocio, onChange }) {
       </label>
 
       <label className="form-lbl">
+        Formas de pago
+        <input
+          value={negocio.formasPago ?? ""}
+          onChange={(e) => set("formasPago", e.target.value)}
+          placeholder="Pago móvil · Zelle · Efectivo"
+          maxLength={200}
+          className="form-inp"
+        />
+        <span className="form-ayuda">
+          Se muestra al pie de la tienda. Déjalo vacío para ocultarlo.
+        </span>
+      </label>
+
+      <label className="form-lbl">
+        Entregas
+        <input
+          value={negocio.entregas ?? ""}
+          onChange={(e) => set("entregas", e.target.value)}
+          placeholder="Delivery en Pariaguán · Envíos nacionales"
+          maxLength={200}
+          className="form-inp"
+        />
+        <span className="form-ayuda">
+          Se muestra al pie de la tienda. Déjalo vacío para ocultarlo.
+        </span>
+      </label>
+
+      <label className="form-lbl">
         Saludo de WhatsApp
         <input
           value={negocio.saludoPedido}

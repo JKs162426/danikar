@@ -580,3 +580,11 @@
     flex: 1;
   }
 }
+
+.form-ayuda {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--t-xs);
+  font-weight: 400;
+  color: var(--tinta-suave);
+}

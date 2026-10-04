@@ -67,6 +67,9 @@ export const negocioSchema = z.object({
     .default(""),
   ubicacion: z.string().trim().max(300).default(""),
   horario: z.string().trim().max(120).default("Lunes a sábado, 9:00 a 18:00"),
+  // Texto libre, ej: "Pago móvil · Zelle · Efectivo". Vacío = no se muestra.
+  formasPago: z.string().trim().max(200).default(""),
+  entregas: z.string().trim().max(200).default(""),
   saludoPedido: z
     .string()
     .trim()
