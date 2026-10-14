@@ -7,6 +7,7 @@ import { config, esProduccion } from "./config/config.js";
 import publicas from "./rutas/publicas.js";
 import admin from "./rutas/admin.js";
 import archivos from "./rutas/archivos.js";
+import salud from "./rutas/salud.js";
 
 const app = express();
 
@@ -64,7 +65,7 @@ app.use(cookieParser());
 
 app.use("/api/archivos", archivos);
 
-app.get("/api/salud", (req, res) => res.json({ ok: true }));
+app.use("/api/salud", salud);
 app.use("/api", publicas);
 app.use("/api/admin", admin);
 

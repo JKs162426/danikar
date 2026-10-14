@@ -81,6 +81,41 @@ export async function guardarContenido(contenidoValidado) {
   return cache;
 }
 
+// Resultado del último ping, para que un health check muy frecuente
+// (o alguien recargando /api/salud) no golpee a MongoDB en cada petición.
+const CACHE_PING_MS = 10 * 1000;
+const TIMEOUT_PING_MS = 2000;
+let ultimoPing = { cuando: 0, ok: false };
+
+export async function baseDatosResponde() {
+  if (Date.now() - ultimoPing.cuando < CACHE_PING_MS) return ultimoPing.ok;
+
+  let ok = false;
+  let temporizador;
+  try {
+    if (!cliente) throw new Error("sin conexión");
+    // Con tope de tiempo: un health check que se cuelga es peor que uno
+    // que dice "no".
+    await Promise.race([
+      cliente.db("dankar").command({ ping: 1 }),
+      new Promise((_, rechazar) => {
+        temporizador = setTimeout(
+          () => rechazar(new Error("timeout")),
+          TIMEOUT_PING_MS
+        );
+      }),
+    ]);
+    ok = true;
+  } catch {
+    ok = false;
+  } finally {
+    clearTimeout(temporizador);
+  }
+
+  ultimoPing = { cuando: Date.now(), ok };
+  return ok;
+}
+
 export async function cerrarConexion() {
   await cliente?.close();
 }

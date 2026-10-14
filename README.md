@@ -56,8 +56,17 @@ See `.env.example` for every environment variable.
 ## Tests
 
 ```bash
-CI=true npm test
+CI=true npm test       # frontend (Jest + React Testing Library)
+npm run test:server    # backend (node:test)
 ```
+
+## Health check
+
+`GET /api/salud` returns `{ "ok": true, "baseDatos": "ok" }`. Render uses it as the
+`healthCheckPath` (see `render.yaml`). It stays `200` even if MongoDB stops
+responding (`"baseDatos": "sin respuesta"`), because the catalog is served from
+memory and the store keeps working; it only returns `503` if the catalog was
+never loaded.
 
 ## Author
 

@@ -1,0 +1,34 @@
+# Configuración del backend en Render (Infrastructure as Code).
+# Refleja el servicio "danikar-backend" tal como está creado en el panel.
+# Los secretos van con sync: false: se cargan en el panel de Render y
+# este archivo nunca los pisa ni los guarda en el repo.
+services:
+  - type: web
+    name: danikar-backend
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    autoDeployTrigger: commit
+    buildCommand: npm install
+    startCommand: node server/servidor.js
+    # Render no pasa tráfico a un deploy nuevo hasta que esta ruta
+    # responda 200, y reinicia la instancia si deja de responder.
+    healthCheckPath: /api/salud
+    envVars:
+      - key: NODE_ENV
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+      - key: ORIGENES_PERMITIDOS
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
