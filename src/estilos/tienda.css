@@ -157,6 +157,17 @@
   margin-bottom: var(--e-4);
 }
 
+.tienda-tasa {
+  max-width: 34rem;
+  margin: calc(-1 * var(--e-2)) auto var(--e-4);
+  text-align: center;
+  font-size: var(--t-sm);
+  color: var(--tinta-suave);
+}
+.tienda-tasa strong {
+  color: var(--tinta);
+}
+
 .filtros {
   display: flex;
   gap: var(--e-2);
@@ -292,6 +303,14 @@
   font-size: var(--t-lg);
   font-weight: 700;
   color: var(--fucsia);
+}
+.tarjeta-precio-bs {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--cuerpo);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--tinta-suave);
 }
 .tarjeta-precio small {
   font-family: var(--cuerpo);
@@ -504,6 +523,16 @@
   padding: var(--e-3) 0;
   margin-bottom: var(--e-3);
   border-top: 1px solid var(--linea);
+}
+.total-monto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.total-monto small {
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--tinta-suave);
 }
 .opciones-total strong {
   font-family: var(--display);

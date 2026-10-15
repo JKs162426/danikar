@@ -588,3 +588,32 @@
   font-weight: 400;
   color: var(--tinta-suave);
 }
+
+/* ── Tasa del dólar ── */
+.campo-tasa .form-lbl {
+  margin-bottom: 8px;
+}
+
+.campo-tasa-fecha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: var(--t-sm);
+  color: var(--tinta-suave);
+}
+
+.campo-tasa-vieja {
+  color: #9a5b00;
+  font-weight: 600;
+}
+
+.campo-tasa-fecha .btn-secundario:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.form-ayuda-error {
+  color: var(--peligro);
+}

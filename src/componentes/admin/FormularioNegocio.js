@@ -1,3 +1,4 @@
+import CampoTasa from "./CampoTasa";
 import "../../estilos/admin.css";
 
 export default function FormularioNegocio({ negocio, onChange }) {
@@ -5,6 +6,15 @@ export default function FormularioNegocio({ negocio, onChange }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      {/* Arriba de todo: es lo único que se toca casi a diario. */}
+      <CampoTasa
+        tasa={negocio.tasaBs ?? null}
+        actualizadaEn={negocio.tasaActualizadaEn ?? null}
+        onCambiar={(tasaBs, tasaActualizadaEn) =>
+          onChange({ ...negocio, tasaBs, tasaActualizadaEn })
+        }
+      />
+
       <label className="form-lbl">
         Nombre del negocio
         <input

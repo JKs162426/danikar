@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Modal from "../comun/Modal";
 import Cantidad from "./Cantidad";
+import Total from "./Total";
 import { construirEnlace, formatearPrecio } from "../../utils/whatsapp";
 
 export default function Carrito({ negocio, carrito, onCerrar }) {
@@ -62,10 +63,7 @@ export default function Carrito({ negocio, carrito, onCerrar }) {
           </ul>
 
           <div className="carrito-pie">
-            <div className="opciones-total">
-              <span>Total</span>
-              <strong>{formatearPrecio(total)}</strong>
-            </div>
+            <Total dolares={total} tasa={negocio.tasaBs} />
 
             {enviado ? (
               <div className="carrito-enviado">

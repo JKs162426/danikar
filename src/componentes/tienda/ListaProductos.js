@@ -1,6 +1,6 @@
 import TarjetaProducto from "./TarjetaProducto";
 
-export default function ListaProductos({ productos, onElegir }) {
+export default function ListaProductos({ productos, tasa, onElegir }) {
   if (productos.length === 0) {
     return (
       <p className="lista-vacia">No hay productos en esta categoría todavía.</p>
@@ -13,6 +13,7 @@ export default function ListaProductos({ productos, onElegir }) {
         <TarjetaProducto
           key={producto.id}
           producto={producto}
+          tasa={tasa}
           onElegir={onElegir}
         />
       ))}

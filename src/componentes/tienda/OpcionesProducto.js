@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Modal from "../comun/Modal";
 import Cantidad from "./Cantidad";
+import Total from "./Total";
 import { MAX_CANTIDAD } from "../../hooks/useCarrito";
 import {
   construirEnlace,
@@ -94,10 +95,7 @@ export default function OpcionesProducto({ negocio, producto, onAgregar, onCerra
         </label>
       )}
 
-      <div className="opciones-total">
-        <span>Total</span>
-        <strong>{formatearPrecio(precio * cantidad)}</strong>
-      </div>
+      <Total dolares={precio * cantidad} tasa={negocio.tasaBs} />
 
       <button
         type="button"

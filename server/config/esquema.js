@@ -70,6 +70,11 @@ export const negocioSchema = z.object({
   // Texto libre, ej: "Pago móvil · Zelle · Efectivo". Vacío = no se muestra.
   formasPago: z.string().trim().max(200).default(""),
   entregas: z.string().trim().max(200).default(""),
+  // Bolívares por dólar. null = la tienda muestra solo precios en dólares.
+  tasaBs: z.number().positive().max(1e9).finite().nullable().default(null),
+  // Cuándo se confirmó la tasa por última vez; la tienda la muestra para
+  // que nadie confíe en una tasa vieja sin saberlo.
+  tasaActualizadaEn: z.string().datetime().nullable().default(null),
   saludoPedido: z
     .string()
     .trim()

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { obtenerContenidoPublico } from "../api/contenido";
 import { useCarrito } from "../hooks/useCarrito";
-import { formatearPrecio } from "../utils/whatsapp";
+import { formatearBs, formatearFechaTasa, formatearPrecio } from "../utils/whatsapp";
 import ListaProductos from "../componentes/tienda/ListaProductos";
 import OpcionesProducto from "../componentes/tienda/OpcionesProducto";
 import Carrito from "../componentes/tienda/Carrito";
@@ -144,6 +144,7 @@ function Catalogo({ negocio, categorias, productos }) {
         </aside>
 
         <h2 className="tienda-subtitulo">Catálogo</h2>
+        {negocio.tasaBs && <AvisoTasa negocio={negocio} />}
 
         {conProductos.length > 1 && (
           <nav className="filtros" aria-label="Categorías">
@@ -161,7 +162,7 @@ function Catalogo({ negocio, categorias, productos }) {
           </nav>
         )}
 
-        <ListaProductos productos={visibles} onElegir={setEligiendo} />
+        <ListaProductos productos={visibles} tasa={negocio.tasaBs} onElegir={setEligiendo} />
       </main>
 
       <PieTienda negocio={negocio} />
@@ -202,5 +203,16 @@ function Catalogo({ negocio, categorias, productos }) {
         />
       )}
     </div>
+  );
+}
+
+function AvisoTasa({ negocio }) {
+  const fecha = formatearFechaTasa(negocio.tasaActualizadaEn);
+  return (
+    <p className="tienda-tasa">
+      Precios en dólares. En bolívares a tasa de{" "}
+      <strong>{formatearBs(1, negocio.tasaBs)}</strong> por $1
+      {fecha && <> · actualizada el {fecha}</>}
+    </p>
   );
 }

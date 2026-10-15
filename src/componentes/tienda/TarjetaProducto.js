@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { formatearPrecio, precioMinimo } from "../../utils/whatsapp";
+import { formatearBs, formatearPrecio, precioMinimo } from "../../utils/whatsapp";
 
-export default function TarjetaProducto({ producto, onElegir }) {
+export default function TarjetaProducto({ producto, tasa, onElegir }) {
   const [imagenActiva, setImagenActiva] = useState(0);
   const minimo = precioMinimo(producto);
+  const minimoBs = formatearBs(minimo, tasa);
   const { imagenes } = producto;
 
   return (
@@ -53,6 +54,7 @@ export default function TarjetaProducto({ producto, onElegir }) {
         <p className="tarjeta-precio">
           {producto.variantes.length > 1 && <small>Desde </small>}
           {formatearPrecio(minimo)}
+          {minimoBs && <span className="tarjeta-precio-bs">{minimoBs}</span>}
         </p>
 
         <button
