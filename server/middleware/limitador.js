@@ -14,9 +14,9 @@ const VENTANA_MS = 15 * MINUTO;
 const MAX_INTENTOS_SALIDA_VERCEL = 20;
 
 // Cada intento se cuenta en todas sus claves y se bloquea si cualquiera se
-// pasa. Por Vercel, la clave "vercel:" frena a la persona con su IP real;
-// la clave "ip:" se cuenta siempre, así que inventarse la cabecera de
-// Vercel yendo directo a Render no sirve para esquivar el límite.
+// pasa. Las garantías son la clave "ip:" (Cloudflare, no se puede
+// falsificar), que se cuenta siempre, y el tope global. La clave "vercel:"
+// es un freno extra para quien no falsifica cabeceras (ver ip.js).
 function clavesLogin(req) {
   const ip = `ip:${ipConfiable(req)}`;
   const vercel = ipSegunVercel(req);

@@ -91,7 +91,7 @@ test("por Vercel: los fallos de otros en la misma salida no bloquean a la dueña
   assert.equal(intentar(limitarLogin, "54.153.45.66", "190.0.0.7"), 200);
 });
 
-test("directo con cabecera de Vercel inventada: la IP real igual frena", async () => {
+test("cabecera de Vercel inventada (directo o por un nodo que la deja pasar): la IP de Cloudflare igual frena", async () => {
   const { limitarLogin } = await nuevoLimitador();
   const pasaron = Array.from({ length: 40 }, (_, i) =>
     intentar(limitarLogin, "97.178.199.123", `6.6.6.${i}`)).filter((c) => c === 200).length;

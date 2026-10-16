@@ -19,9 +19,12 @@ export function ipConfiable(req) {
   return ipValida(req.get?.("cf-connecting-ip")) ?? req.ip;
 }
 
-// X-Vercel-Forwarded-For la reescribe Vercel con la IP real de la persona
-// (aunque el cliente mande otra). Pero quien llama directo a Render puede
-// inventarla, así que nunca se usa sola: ver clavesLogin en limitador.js.
+// X-Vercel-Forwarded-For suele traer la IP real de la persona, pero NO es
+// confiable: en las pruebas, algunos nodos de Vercel reemplazaron una IP
+// falsa enviada por el cliente y otros la dejaron pasar, y quien llama
+// directo a Render la puede inventar siempre. Sirve como freno extra para
+// quien no se molesta en falsificarla, nunca como garantía: ver
+// clavesLogin en limitador.js.
 export function ipSegunVercel(req) {
   return ipValida(req.get?.("x-vercel-forwarded-for")?.split(",")[0]);
 }
