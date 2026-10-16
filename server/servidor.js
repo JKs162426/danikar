@@ -15,8 +15,8 @@ const app = express();
 // No anunciamos que esto corre en Express.
 app.disable("x-powered-by");
 
-// Render y Fly ponen un proxy delante. Sin esto req.ip es la IP del
-// proxy y el limitador bloquearía a todo el mundo junto.
+// Los limitadores no usan req.ip sino ipConfiable() (ver middleware/ip.js):
+// detrás de Cloudflare y Render, req.ip es un balanceador interno.
 app.set("trust proxy", 1);
 
 app.use(

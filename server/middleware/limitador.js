@@ -1,3 +1,5 @@
+import { ipConfiable } from "./ip.js";
+
 // Limitadores en memoria. Alcanzan para un solo proceso; si algún día
 // corres más de una instancia, esto deja de servir.
 const MINUTO = 60 * 1000;
@@ -36,7 +38,8 @@ export function limitarLogin(req, res, next) {
     );
   }
 
-  let registro = intentos.get(req.ip);
+  const ip = ipConfiable(req);
+  let registro = intentos.get(ip);
   if (
     registro &&
     ahora >= registro.bloqueadoHasta &&
@@ -52,7 +55,7 @@ export function limitarLogin(req, res, next) {
   // una ráfaga simultánea pasaría entera mientras bcrypt trabaja.
   registro ??= { conteo: 0, primerIntento: ahora, bloqueadoHasta: 0 };
   registro.conteo += 1;
-  intentos.set(req.ip, registro);
+  intentos.set(ip, registro);
   if (registro.conteo > MAX_INTENTOS) {
     registro.bloqueadoHasta = ahora + VENTANA_MS;
     return demasiados(res, VENTANA_MS, "Demasiados intentos.");
@@ -75,8 +78,8 @@ export function registrarFallo() {
   fallosGlobales.push(Date.now());
 }
 
-export function limpiarIntentos(ip) {
-  intentos.delete(ip);
+export function limpiarIntentos(req) {
+  intentos.delete(ipConfiable(req));
 }
 
 // --- Genérico: N peticiones por ventana, por IP ---
@@ -88,10 +91,11 @@ export function limitarPeticiones({ maximo, ventanaMs, mensaje }) {
 
   return (req, res, next) => {
     const ahora = Date.now();
-    const registro = conteos.get(req.ip);
+    const ip = ipConfiable(req);
+    const registro = conteos.get(ip);
 
     if (!registro || ahora - registro.inicio > ventanaMs) {
-      conteos.set(req.ip, { inicio: ahora, conteo: 1 });
+      conteos.set(ip, { inicio: ahora, conteo: 1 });
       return next();
     }
     registro.conteo += 1;

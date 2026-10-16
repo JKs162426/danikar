@@ -5,6 +5,14 @@ import assert from "node:assert/strict";
 let n = 0;
 const nuevoLimitador = () => import(`../middleware/limitador.js?copia=${n++}`);
 
+// Como en producción: req.ip es un balanceador interno que cambia en cada
+// petición, y la IP real llega en CF-Connecting-IP.
+let balanceador = 0;
+const peticion = (ip) => ({
+  ip: `10.199.0.${balanceador++ % 250}`,
+  get: (h) => (h === "cf-connecting-ip" ? ip : undefined),
+});
+
 function intentar(limitarLogin, ip) {
   const res = {
     codigo: 200,
@@ -12,7 +20,7 @@ function intentar(limitarLogin, ip) {
     json(cuerpo) { this.cuerpo = cuerpo; return this; },
   };
   let paso = false;
-  limitarLogin({ ip }, res, () => { paso = true; });
+  limitarLogin(peticion(ip), res, () => { paso = true; });
   return paso ? 200 : res.codigo;
 }
 
@@ -34,7 +42,7 @@ test("el intento cuenta antes de revisar la contraseña (ráfaga simultánea)", 
 test("un login correcto limpia el contador de esa IP", async () => {
   const { limitarLogin, limpiarIntentos } = await nuevoLimitador();
   for (let i = 0; i < 4; i++) intentar(limitarLogin, "4.4.4.4");
-  limpiarIntentos("4.4.4.4");
+  limpiarIntentos(peticion("4.4.4.4"));
   const codigos = Array.from({ length: 5 }, () => intentar(limitarLogin, "4.4.4.4"));
   assert.ok(codigos.every((c) => c === 200));
 });
@@ -57,4 +65,11 @@ test("como máximo 3 comprobaciones de contraseña a la vez", async () => {
   cupos[0](); // liberar dos veces no regala cupos
   assert.ok(ocuparCupoComparacion());
   assert.equal(ocuparCupoComparacion(), null);
+});
+
+test("sin Cloudflare (desarrollo local) usa req.ip", async () => {
+  const { ipConfiable } = await import("../middleware/ip.js");
+  assert.equal(ipConfiable({ ip: "::1", get: () => undefined }), "::1");
+  assert.equal(ipConfiable({ ip: "::1", get: () => "no-es-una-ip" }), "::1");
+  assert.equal(ipConfiable({ ip: "10.0.0.1", get: () => " 97.178.199.123 " }), "97.178.199.123");
 });

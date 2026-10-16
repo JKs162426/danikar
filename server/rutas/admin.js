@@ -14,17 +14,17 @@ import {
   registrarFallo,
   limpiarIntentos,
 } from "../middleware/limitador.js";
+import { ipConfiable } from "../middleware/ip.js";
 
-// Para el registro: la IP que ve Express y la cadena de proxies. Con esto
-// en los logs de Render se puede comprobar que el límite por IP ve a
-// quien de verdad se conecta.
+// Para el registro: la IP que usa el limitador y las cabeceras de proxies
+// (ver ip.js). Sirven para revisar intentos sospechosos en los logs.
 function origenDelIntento(req) {
   const cabecera = (nombre) => (req.get(nombre) ?? "-").slice(0, 200);
   return [
-    `ip=${req.ip}`,
+    `ip=${ipConfiable(req)}`,
     `xff=${cabecera("x-forwarded-for")}`,
-    `cf=${cabecera("cf-connecting-ip")}`,
-    `tci=${cabecera("true-client-ip")}`,
+    `xri=${cabecera("x-real-ip")}`,
+    `xvff=${cabecera("x-vercel-forwarded-for")}`,
   ].join(" ");
 }
 
@@ -48,7 +48,7 @@ router.post("/login", limitarLogin, async (req, res, next) => {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
 
-    limpiarIntentos(req.ip);
+    limpiarIntentos(req);
     console.info(`[login] sesión iniciada ${origenDelIntento(req)}`);
     res.cookie(NOMBRE_COOKIE, emitirToken(), opcionesCookie());
     return res.json({ ok: true });
