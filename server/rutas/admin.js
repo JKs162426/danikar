@@ -10,27 +10,52 @@ import {
 } from "../middleware/auth.js";
 import {
   limitarLogin,
+  ocuparCupoComparacion,
   registrarFallo,
   limpiarIntentos,
 } from "../middleware/limitador.js";
 
+// Para el registro: la IP que ve Express y la cadena de proxies. Con esto
+// en los logs de Render se puede comprobar que el límite por IP ve a
+// quien de verdad se conecta.
+function origenDelIntento(req) {
+  const cabecera = (nombre) => (req.get(nombre) ?? "-").slice(0, 200);
+  return [
+    `ip=${req.ip}`,
+    `xff=${cabecera("x-forwarded-for")}`,
+    `cf=${cabecera("cf-connecting-ip")}`,
+    `tci=${cabecera("true-client-ip")}`,
+  ].join(" ");
+}
+
 const router = Router();
 
 router.post("/login", limitarLogin, async (req, res, next) => {
+  const liberar = ocuparCupoComparacion();
+  if (!liberar) {
+    return res
+      .status(503)
+      .json({ error: "El servidor está ocupado. Intenta en unos segundos." });
+  }
+
   try {
     const { password } = req.body ?? {};
 
     if (!(await credencialesValidas(password))) {
-      registrarFallo(req.ip);
+      registrarFallo();
+      console.warn(`[login] intento fallido ${origenDelIntento(req)}`);
       // Mensaje genérico a propósito: no le confirmamos nada a quien prueba.
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
 
     limpiarIntentos(req.ip);
+    console.info(`[login] sesión iniciada ${origenDelIntento(req)}`);
     res.cookie(NOMBRE_COOKIE, emitirToken(), opcionesCookie());
     return res.json({ ok: true });
   } catch (error) {
     return next(error);
+  } finally {
+    liberar();
   }
 });
 

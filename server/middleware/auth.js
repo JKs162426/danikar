@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { createHash } from "node:crypto";
 import { config } from "../config/config.js";
 
 export const NOMBRE_COOKIE = "sesion_admin";
@@ -7,6 +8,15 @@ export const NOMBRE_COOKIE = "sesion_admin";
 // Fijamos el algoritmo al firmar y al verificar: así nadie puede colar
 // un token con "alg: none" u otro algoritmo que no esperamos.
 const ALGORITMO = "HS256";
+
+// Huella de la contraseña actual dentro del token: si se cambia
+// ADMIN_PASSWORD_HASH, todas las sesiones abiertas dejan de valer. Es la
+// forma de echar a alguien que haya conseguido entrar. Solo es un
+// fragmento del SHA-256 del hash: no sirve para adivinar la contraseña.
+const huellaPassword = createHash("sha256")
+  .update(config.passwordHash)
+  .digest("base64url")
+  .slice(0, 16);
 
 export async function credencialesValidas(password) {
   // bcrypt solo mira los primeros 72 bytes; algo más largo es ruido
@@ -19,7 +29,7 @@ export async function credencialesValidas(password) {
 }
 
 export function emitirToken() {
-  return jwt.sign({ rol: "admin" }, config.jwtSecret, {
+  return jwt.sign({ rol: "admin", v: huellaPassword }, config.jwtSecret, {
     algorithm: ALGORITMO,
     expiresIn: `${config.sesionHoras}h`,
   });
@@ -46,6 +56,7 @@ export function requiereAdmin(req, res, next) {
     if (payload.rol !== "admin") {
       return res.status(403).json({ error: "Sin permisos" });
     }
+    if (payload.v !== huellaPassword) throw new Error("contraseña cambiada");
     return next();
   } catch {
     // Token vencido o firma inválida: limpiamos la cookie para que el

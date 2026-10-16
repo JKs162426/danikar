@@ -14,7 +14,8 @@ cloudinary.config({
 // Multer en memoria: no toca el disco, manda el buffer directo a Cloudinary.
 const subir = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  // Una sola parte (la imagen): cualquier campo extra se rechaza.
+  limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 0, parts: 1 },
   fileFilter: (req, file, cb) => {
     const permitidos = /^image\/(jpeg|png|webp)$/;
     const extension = /\.(jpe?g|png|webp)$/i;

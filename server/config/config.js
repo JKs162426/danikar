@@ -38,3 +38,12 @@ export const config = {
 };
 
 export const esProduccion = config.entorno === "production";
+
+// Orígenes que pueden llamar a la API con la cookie de sesión. En
+// desarrollo se suma el servidor de React, que corre en otro puerto.
+export const origenesPermitidos = [
+  ...(process.env.ORIGENES_PERMITIDOS
+    ? process.env.ORIGENES_PERMITIDOS.split(",").map((o) => o.trim())
+    : ["https://dankar.vercel.app"]),
+  ...(esProduccion ? [] : ["http://localhost:3000"]),
+];

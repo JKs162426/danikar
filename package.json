@@ -30,7 +30,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "node --max-http-header-size=32768 --watch server/servidor.js",
-    "test:server": "node --test --experimental-test-module-mocks \"server/__tests__/*.test.js\""
+    "test:server": "NODE_ENV=test node --test --experimental-test-module-mocks \"server/__tests__/*.test.js\""
   },
   "eslintConfig": {
     "extends": [

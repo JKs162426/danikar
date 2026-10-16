@@ -2,42 +2,77 @@
 // corres más de una instancia, esto deja de servir.
 const MINUTO = 60 * 1000;
 
-// --- Login: bloquea tras varios fallos seguidos ---
+// --- Login ---
 const intentos = new Map();
 const MAX_INTENTOS = 5;
 const VENTANA_MS = 15 * MINUTO;
 
+// Respaldo que no depende de la IP. Si el servidor no logra ver la IP real
+// (detrás de varios proxies cada petición puede parecer de alguien
+// distinto), el límite por IP no frena nada; este sí. Con la IP bien
+// detectada casi nunca se alcanza.
+const MAX_FALLOS_GLOBALES = 30;
+let fallosGlobales = [];
+
+// Cada comprobación de bcrypt ocupa la CPU un rato. Sin tope, una
+// avalancha de logins simultáneos dejaría al servidor sin aire.
+const MAX_COMPARACIONES = 3;
+let comparando = 0;
+
+function demasiados(res, ms, mensaje) {
+  const minutos = Math.max(1, Math.ceil(ms / MINUTO));
+  return res.status(429).json({ error: `${mensaje} Intenta en ${minutos} min.` });
+}
+
 export function limitarLogin(req, res, next) {
-  const registro = intentos.get(req.ip);
   const ahora = Date.now();
 
-  if (registro && ahora < registro.bloqueadoHasta) {
-    const segundos = Math.ceil((registro.bloqueadoHasta - ahora) / 1000);
-    return res
-      .status(429)
-      .json({ error: `Demasiados intentos. Espera ${segundos}s.` });
+  fallosGlobales = fallosGlobales.filter((t) => ahora - t < VENTANA_MS);
+  if (fallosGlobales.length >= MAX_FALLOS_GLOBALES) {
+    return demasiados(
+      res,
+      fallosGlobales[0] + VENTANA_MS - ahora,
+      "El acceso al panel está pausado por seguridad."
+    );
   }
-  if (registro && ahora - registro.primerIntento > VENTANA_MS) {
-    intentos.delete(req.ip);
+
+  let registro = intentos.get(req.ip);
+  if (
+    registro &&
+    ahora >= registro.bloqueadoHasta &&
+    ahora - registro.primerIntento > VENTANA_MS
+  ) {
+    registro = undefined;
+  }
+  if (registro && ahora < registro.bloqueadoHasta) {
+    return demasiados(res, registro.bloqueadoHasta - ahora, "Demasiados intentos.");
+  }
+
+  // El intento cuenta ANTES de revisar la contraseña: si contara al fallar,
+  // una ráfaga simultánea pasaría entera mientras bcrypt trabaja.
+  registro ??= { conteo: 0, primerIntento: ahora, bloqueadoHasta: 0 };
+  registro.conteo += 1;
+  intentos.set(req.ip, registro);
+  if (registro.conteo > MAX_INTENTOS) {
+    registro.bloqueadoHasta = ahora + VENTANA_MS;
+    return demasiados(res, VENTANA_MS, "Demasiados intentos.");
   }
   return next();
 }
 
-export function registrarFallo(ip) {
-  const ahora = Date.now();
-  const registro = intentos.get(ip) ?? {
-    conteo: 0,
-    primerIntento: ahora,
-    bloqueadoHasta: 0,
+// Devuelve una función para liberar el cupo, o null si no hay cupo.
+export function ocuparCupoComparacion() {
+  if (comparando >= MAX_COMPARACIONES) return null;
+  comparando += 1;
+  let liberado = false;
+  return () => {
+    if (!liberado) comparando -= 1;
+    liberado = true;
   };
-  registro.conteo += 1;
+}
 
-  if (registro.conteo >= MAX_INTENTOS) {
-    registro.bloqueadoHasta = ahora + VENTANA_MS;
-    registro.conteo = 0;
-    registro.primerIntento = ahora;
-  }
-  intentos.set(ip, registro);
+export function registrarFallo() {
+  fallosGlobales.push(Date.now());
 }
 
 export function limpiarIntentos(ip) {

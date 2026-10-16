@@ -3,7 +3,8 @@ import cookieParser from "cookie-parser";
 import { inicializarAlmacen, cerrarConexion } from "./datos/almacen.js";
 
 import cors from "cors";
-import { config, esProduccion } from "./config/config.js";
+import { config, esProduccion, origenesPermitidos } from "./config/config.js";
+import { verificarOrigen } from "./middleware/origen.js";
 import publicas from "./rutas/publicas.js";
 import admin from "./rutas/admin.js";
 import archivos from "./rutas/archivos.js";
@@ -17,9 +18,6 @@ app.disable("x-powered-by");
 // Render y Fly ponen un proxy delante. Sin esto req.ip es la IP del
 // proxy y el limitador bloquearía a todo el mundo junto.
 app.set("trust proxy", 1);
-const origenesPermitidos = process.env.ORIGENES_PERMITIDOS
-  ? process.env.ORIGENES_PERMITIDOS.split(",").map((o) => o.trim())
-  : ["https://dankar.vercel.app"];
 
 app.use(
   cors({
@@ -62,6 +60,7 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
+app.use("/api", verificarOrigen);
 
 app.use("/api/archivos", archivos);
 
