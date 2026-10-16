@@ -14,7 +14,7 @@ import {
   registrarFallo,
   limpiarIntentos,
 } from "../middleware/limitador.js";
-import { ipConfiable } from "../middleware/ip.js";
+import { ipConfiable, ipSegunVercel } from "../middleware/ip.js";
 
 // Para el registro: la IP que usa el limitador y las cabeceras de proxies
 // (ver ip.js). Sirven para revisar intentos sospechosos en los logs.
@@ -22,9 +22,8 @@ function origenDelIntento(req) {
   const cabecera = (nombre) => (req.get(nombre) ?? "-").slice(0, 200);
   return [
     `ip=${ipConfiable(req)}`,
+    `vercel=${ipSegunVercel(req) ?? "-"}`,
     `xff=${cabecera("x-forwarded-for")}`,
-    `xri=${cabecera("x-real-ip")}`,
-    `xvff=${cabecera("x-vercel-forwarded-for")}`,
   ].join(" ");
 }
 

@@ -1,4 +1,4 @@
-import { ipConfiable } from "./ip.js";
+import { ipConfiable, ipSegunVercel } from "./ip.js";
 
 // Limitadores en memoria. Alcanzan para un solo proceso; si algún día
 // corres más de una instancia, esto deja de servir.
@@ -8,6 +8,25 @@ const MINUTO = 60 * 1000;
 const intentos = new Map();
 const MAX_INTENTOS = 5;
 const VENTANA_MS = 15 * MINUTO;
+// Tope de la IP de Cloudflare cuando la petición dice venir por Vercel: esa
+// IP es una salida de Vercel compartida por todas las visitas, así que con
+// 5 se bloquearía de rebote a gente que no hizo nada.
+const MAX_INTENTOS_SALIDA_VERCEL = 20;
+
+// Cada intento se cuenta en todas sus claves y se bloquea si cualquiera se
+// pasa. Por Vercel, la clave "vercel:" frena a la persona con su IP real;
+// la clave "ip:" se cuenta siempre, así que inventarse la cabecera de
+// Vercel yendo directo a Render no sirve para esquivar el límite.
+function clavesLogin(req) {
+  const ip = `ip:${ipConfiable(req)}`;
+  const vercel = ipSegunVercel(req);
+  return vercel
+    ? [
+        { clave: `vercel:${vercel}`, maximo: MAX_INTENTOS },
+        { clave: ip, maximo: MAX_INTENTOS_SALIDA_VERCEL },
+      ]
+    : [{ clave: ip, maximo: MAX_INTENTOS }];
+}
 
 // Respaldo que no depende de la IP. Si el servidor no logra ver la IP real
 // (detrás de varios proxies cada petición puede parecer de alguien
@@ -38,28 +57,36 @@ export function limitarLogin(req, res, next) {
     );
   }
 
-  const ip = ipConfiable(req);
-  let registro = intentos.get(ip);
-  if (
-    registro &&
-    ahora >= registro.bloqueadoHasta &&
-    ahora - registro.primerIntento > VENTANA_MS
-  ) {
-    registro = undefined;
-  }
-  if (registro && ahora < registro.bloqueadoHasta) {
-    return demasiados(res, registro.bloqueadoHasta - ahora, "Demasiados intentos.");
+  const claves = clavesLogin(req).map(({ clave, maximo }) => {
+    let registro = intentos.get(clave);
+    if (
+      registro &&
+      ahora >= registro.bloqueadoHasta &&
+      ahora - registro.primerIntento > VENTANA_MS
+    ) {
+      registro = undefined;
+    }
+    return { clave, maximo, registro };
+  });
+
+  const bloqueada = claves.find(({ registro }) => registro && ahora < registro.bloqueadoHasta);
+  if (bloqueada) {
+    return demasiados(res, bloqueada.registro.bloqueadoHasta - ahora, "Demasiados intentos.");
   }
 
   // El intento cuenta ANTES de revisar la contraseña: si contara al fallar,
   // una ráfaga simultánea pasaría entera mientras bcrypt trabaja.
-  registro ??= { conteo: 0, primerIntento: ahora, bloqueadoHasta: 0 };
-  registro.conteo += 1;
-  intentos.set(ip, registro);
-  if (registro.conteo > MAX_INTENTOS) {
-    registro.bloqueadoHasta = ahora + VENTANA_MS;
-    return demasiados(res, VENTANA_MS, "Demasiados intentos.");
+  let excedida = false;
+  for (const c of claves) {
+    c.registro ??= { conteo: 0, primerIntento: ahora, bloqueadoHasta: 0 };
+    c.registro.conteo += 1;
+    intentos.set(c.clave, c.registro);
+    if (c.registro.conteo > c.maximo) {
+      c.registro.bloqueadoHasta = ahora + VENTANA_MS;
+      excedida = true;
+    }
   }
+  if (excedida) return demasiados(res, VENTANA_MS, "Demasiados intentos.");
   return next();
 }
 
@@ -79,7 +106,7 @@ export function registrarFallo() {
 }
 
 export function limpiarIntentos(req) {
-  intentos.delete(ipConfiable(req));
+  for (const { clave } of clavesLogin(req)) intentos.delete(clave);
 }
 
 // --- Genérico: N peticiones por ventana, por IP ---
