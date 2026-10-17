@@ -617,3 +617,43 @@
 .form-ayuda-error {
   color: var(--peligro);
 }
+
+/* ── Descripción con IA ── */
+.form-lbl-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.btn-ia {
+  padding: 5px 12px;
+  border: 1px solid var(--fucsia);
+  border-radius: 999px;
+  background: var(--papel-hondo);
+  color: var(--fucsia-hondo);
+  font-family: var(--cuerpo);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn-ia:hover:not(:disabled) {
+  background: #fff;
+}
+.btn-ia:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-texto {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--fucsia);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

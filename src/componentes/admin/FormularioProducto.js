@@ -1,5 +1,9 @@
-import { useState, useRef } from "react";
-import { subirImagen } from "../../api/contenido";
+import { useState, useRef, useEffect } from "react";
+import {
+  subirImagen,
+  obtenerEstadoIa,
+  generarDescripcion,
+} from "../../api/contenido";
 import "../../estilos/admin.css";
 
 const TIPOS_AGARRE = ["pinza", "banda", "diadema", "gancho"];
@@ -40,6 +44,43 @@ export default function FormularioProducto({
   const inputArchivo = useRef(null);
 
   const set = (campo, valor) => setForm((f) => ({ ...f, [campo]: valor }));
+
+  // --- Descripción con IA ---
+  const [ia, setIa] = useState({ disponible: false });
+  const [escribiendo, setEscribiendo] = useState(false);
+  const [errorIa, setErrorIa] = useState(null);
+  // Lo que había antes de que escribiera la IA, para poder deshacer.
+  const [anterior, setAnterior] = useState(null);
+  const [autoria, setAutoria] = useState(null);
+
+  useEffect(() => {
+    let vigente = true;
+    obtenerEstadoIa().then((estado) => vigente && setIa(estado));
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
+  async function escribirConIa() {
+    setEscribiendo(true);
+    setErrorIa(null);
+    try {
+      const { descripcion, modelo, usaFotos } = await generarDescripcion(form);
+      setAnterior((a) => a ?? form.descripcion);
+      setAutoria(`${modelo}${usaFotos ? ", mirando las fotos" : ""}`);
+      set("descripcion", descripcion);
+    } catch (err) {
+      setErrorIa(err.message);
+    } finally {
+      setEscribiendo(false);
+    }
+  }
+
+  function deshacerIa() {
+    set("descripcion", anterior);
+    setAnterior(null);
+    setAutoria(null);
+  }
 
   // --- Colores ---
   function agregarColor() {
@@ -126,15 +167,43 @@ export default function FormularioProducto({
         </label>
 
         {/* Descripción */}
-        <label className="form-lbl">
-          Descripción
+        <div className="form-lbl">
+          <div className="form-lbl-fila">
+            <label htmlFor="descripcion-producto">Descripción</label>
+            {ia.disponible && (
+              <button
+                type="button"
+                onClick={escribirConIa}
+                disabled={escribiendo || !form.nombre.trim()}
+                title={form.nombre.trim() ? undefined : "Escribe primero el nombre"}
+                className="btn-ia"
+              >
+                {escribiendo
+                  ? "Escribiendo…"
+                  : anterior !== null
+                  ? "✨ Otra versión"
+                  : "✨ Escribir con IA"}
+              </button>
+            )}
+          </div>
           <textarea
+            id="descripcion-producto"
             value={form.descripcion}
             onChange={(e) => set("descripcion", e.target.value)}
-            rows={2}
+            rows={4}
+            maxLength={1000}
             className="form-inp"
           />
-        </label>
+          {errorIa && <span className="form-ayuda form-ayuda-error">{errorIa}</span>}
+          {anterior !== null && !errorIa && (
+            <span className="form-ayuda">
+              Escrita con IA ({autoria}). Revísala antes de guardar ·{" "}
+              <button type="button" onClick={deshacerIa} className="btn-texto">
+                Deshacer
+              </button>
+            </span>
+          )}
+        </div>
 
         {/* Categoría */}
         <label className="form-lbl">

@@ -40,10 +40,13 @@ export const config = {
 export const esProduccion = config.entorno === "production";
 
 // Orígenes que pueden llamar a la API con la cookie de sesión. En
-// desarrollo se suma el servidor de React, que corre en otro puerto.
+// desarrollo se suma el servidor de React, y también el propio backend:
+// el proxy de "npm start" reescribe Origin con la dirección del backend.
 export const origenesPermitidos = [
   ...(process.env.ORIGENES_PERMITIDOS
     ? process.env.ORIGENES_PERMITIDOS.split(",").map((o) => o.trim())
     : ["https://dankar.vercel.app"]),
-  ...(esProduccion ? [] : ["http://localhost:3000"]),
+  ...(esProduccion
+    ? []
+    : ["http://localhost:3000", `http://localhost:${config.puerto}`]),
 ];

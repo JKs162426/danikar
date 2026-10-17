@@ -21,3 +21,21 @@ export async function subirImagen(archivo) {
   const { url } = await pedir("/archivos/imagen", { method: "POST", body: form });
   return url;
 }
+
+// Una sola consulta por sesión del panel: si la IA no está configurada en
+// el servidor, el botón ni aparece.
+let estadoIa = null;
+export function obtenerEstadoIa() {
+  estadoIa ??= pedir("/admin/ia/estado").catch(() => {
+    estadoIa = null;
+    return { disponible: false };
+  });
+  return estadoIa;
+}
+
+export function generarDescripcion(producto) {
+  return pedir("/admin/ia/descripcion", {
+    method: "POST",
+    body: JSON.stringify(producto),
+  });
+}

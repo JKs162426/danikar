@@ -15,6 +15,7 @@ import {
   limpiarIntentos,
 } from "../middleware/limitador.js";
 import { ipConfiable, ipSegunVercel } from "../middleware/ip.js";
+import ia from "./ia.js";
 
 // Para el registro: la IP que usa el limitador y las cabeceras de proxies
 // (ver ip.js). Sirven para revisar intentos sospechosos en los logs.
@@ -71,6 +72,8 @@ router.use((req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
   next();
 });
+
+router.use("/ia", ia);
 
 router.get("/sesion", (req, res) => {
   res.json({ autenticado: true });

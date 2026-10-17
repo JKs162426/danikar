@@ -32,3 +32,10 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      # IA de descripciones (Groq). Sin la clave, el panel no muestra el botón.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: IA_MODELO
+        value: llama-3.3-70b-versatile
+      - key: IA_VISION
+        value: "false"
