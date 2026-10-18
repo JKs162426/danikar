@@ -36,6 +36,8 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: IA_MODELO
-        value: llama-3.3-70b-versatile
+        value: qwen/qwen3.8-27b
       - key: IA_VISION
-        value: "false"
+        value: "true"
+      - key: IA_MAX_FOTOS
+        value: "1"

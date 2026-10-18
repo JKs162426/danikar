@@ -1,24 +1,24 @@
 import { z } from "zod";
 import { TIPOS_AGARRE } from "../config/esquema.js";
 
-// Escribe la descripción de un producto con un modelo de Meta servido por
-// Groq. La API de Groq es compatible con la de OpenAI, así que cambiar de
-// proveedor (por ejemplo, a la Llama API de Meta) es cambiar IA_URL.
-//
-// Llama 3.3 70B solo lee texto. Si el modelo configurado ve imágenes
-// (IA_VISION=true, por ejemplo meta-models/muse-spark-open), también se le
-// mandan las fotos del producto.
+// Escribe la descripción de un producto mirando sus fotos, con un modelo
+// multimodal servido por Groq (por defecto Qwen 3.8 27B). La API de Groq es
+// compatible con la de OpenAI, así que cambiar de modelo o de proveedor es
+// cambiar IA_MODELO e IA_URL. Con un modelo que solo lee texto, IA_VISION=false.
 
 export const MAX_DESCRIPCION = 1000;
-const MAX_IMAGENES = 3;
 const TIEMPO_MAXIMO_MS = 20 * 1000;
 
 export function configuracionIa(entorno = process.env) {
   return {
-    clave: entorno.GROQ_API_KEY?.trim() || null,
+    clave: (entorno.IA_API_KEY ?? entorno.GROQ_API_KEY)?.trim() || null,
     url: entorno.IA_URL ?? "https://api.groq.com/openai/v1/chat/completions",
-    modelo: entorno.IA_MODELO ?? "llama-3.3-70b-versatile",
-    vision: entorno.IA_VISION === "true",
+    modelo: entorno.IA_MODELO ?? "qwen/qwen3.8-27b",
+    vision: entorno.IA_VISION !== "false",
+    // Cada foto cuesta unos 1.800 tokens (medido: igual a 512 que a 768 px)
+    // y el plan gratuito de Groq da 7.000 por minuto. Con 1 foto entran unos
+    // 3 pedidos por minuto, así "Otra versión" no choca con el límite.
+    maxFotos: Math.max(0, Math.min(5, Number(entorno.IA_MAX_FOTOS ?? 1) || 0)),
   };
 }
 
@@ -35,6 +35,9 @@ export const pedidoSchema = z.object({
   tipoAgarre: z.enum(TIPOS_AGARRE).nullable().default(null),
   personalizable: z.boolean().default(false),
   imagenes: z.array(z.string().trim().max(500)).max(8).default([]),
+  // Lo que la dueña ya había escrito (muchas veces, las medidas). La IA lo
+  // tiene que conservar, no reemplazar.
+  notas: z.string().trim().max(1000).default(""),
 });
 
 export class ErrorIa extends Error {
@@ -44,8 +47,8 @@ export class ErrorIa extends Error {
   }
 }
 
-// Solo fotos de Cloudinary (las que sube el panel), achicadas: el modelo no
-// necesita 4000 px para ver un lazo y cada píxel cuesta tokens.
+// Solo fotos de Cloudinary (las que sube el panel), a 768 px: más grande no
+// aporta, y a 512 px el modelo confundió capibaras con hámsters.
 export function imagenParaIa(url) {
   if (!/^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\//.test(url)) {
     return null;
@@ -56,7 +59,7 @@ export function imagenParaIa(url) {
   );
 }
 
-export function construirMensajes(producto, negocio, { conFotos }) {
+export function construirMensajes(producto, negocio, { conFotos, maxFotos = 2 }) {
   const sistema = [
     `Escribes las descripciones de los productos de ${negocio.nombre}, una tienda familiar de accesorios artesanales${negocio.ubicacion ? ` en ${negocio.ubicacion}` : ""}.`,
     "Escribes en español de Venezuela, con un tono cálido y cercano, sin exagerar.",
@@ -65,6 +68,7 @@ export function construirMensajes(producto, negocio, { conFotos }) {
     "- Usa solo los datos que te dan" +
       (conFotos ? " y lo que se ve en las fotos" : "") +
       ". No inventes materiales, medidas ni técnicas.",
+    "- Si hay notas de la dueña, respétalas: incluye sus medidas tal cual y no las contradigas.",
     "- No menciones precios, descuentos ni promociones.",
     "- Si el producto es personalizable, invita a pedirlo con sus colores o un nombre.",
     "- Sin emojis, sin comillas, sin títulos ni listas: responde solo con el texto de la descripción.",
@@ -80,12 +84,13 @@ export function construirMensajes(producto, negocio, { conFotos }) {
       `Tamaños: ${producto.variantes.map((v) => v.tamano).join(", ")}`,
     producto.tipoAgarre && `Tipo de agarre: ${producto.tipoAgarre}`,
     `Personalizable: ${producto.personalizable ? "sí" : "no"}`,
+    producto.notas && `Notas de la dueña:\n${producto.notas}`,
   ]
     .filter(Boolean)
     .join("\n");
 
   const fotos = conFotos
-    ? producto.imagenes.map(imagenParaIa).filter(Boolean).slice(0, MAX_IMAGENES)
+    ? producto.imagenes.map(imagenParaIa).filter(Boolean).slice(0, maxFotos)
     : [];
 
   const contenido =
@@ -109,8 +114,10 @@ export function construirMensajes(producto, negocio, { conFotos }) {
 // "Descripción:" delante aunque se les pida que no.
 export function limpiarRespuesta(texto) {
   const sinComillas = (t) => t.trim().replace(/^["“”«»']+|["“”«»']+$/g, "").trim();
+  // Algunos modelos (Qwen, entre otros) anteponen su razonamiento.
+  const sinRazonamiento = (texto ?? "").replace(/<think>[\s\S]*?<\/think>/gi, "");
   let limpio = sinComillas(
-    sinComillas((texto ?? "").replace(/\s+/g, " ")).replace(
+    sinComillas(sinRazonamiento.replace(/\s+/g, " ")).replace(
       /^(descripci[oó]n|description)\s*:\s*/i,
       ""
     )
@@ -150,7 +157,8 @@ async function llamarModelo(config, mensajes, fetchImpl) {
 
   const cuerpo = await respuesta.json().catch(() => null);
   if (!respuesta.ok) {
-    return { ok: false, estado: respuesta.status, cuerpo };
+    const espera = Number(respuesta.headers?.get?.("retry-after"));
+    return { ok: false, estado: respuesta.status, cuerpo, espera };
   }
   return { ok: true, texto: cuerpo?.choices?.[0]?.message?.content };
 }
@@ -167,6 +175,7 @@ export async function generarDescripcion({
 
   let { mensajes, usaFotos } = construirMensajes(producto, negocio, {
     conFotos: config.vision,
+    maxFotos: config.maxFotos,
   });
   let resultado = await llamarModelo(config, mensajes, fetchImpl);
 
@@ -187,7 +196,13 @@ export async function generarDescripcion({
       JSON.stringify(resultado.cuerpo?.error ?? resultado.cuerpo)?.slice(0, 300)
     );
     if (resultado.estado === 429) {
-      throw new ErrorIa("La IA está ocupada. Intenta en un minuto.", 429);
+      const segundos = Math.ceil(resultado.espera);
+      throw new ErrorIa(
+        segundos > 0 && segundos < 600
+          ? `La IA está ocupada. Intenta en ${segundos} segundos.`
+          : "La IA está ocupada. Intenta en un minuto.",
+        429
+      );
     }
     throw new ErrorIa("La IA no respondió bien. Intenta de nuevo.", 502);
   }

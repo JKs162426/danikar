@@ -65,7 +65,12 @@ export default function FormularioProducto({
     setEscribiendo(true);
     setErrorIa(null);
     try {
-      const { descripcion, modelo, usaFotos } = await generarDescripcion(form);
+      // Las notas son lo que escribió la dueña (sus medidas, por ejemplo),
+      // no una versión anterior de la IA: así "Otra versión" no se aleja.
+      const { descripcion, modelo, usaFotos } = await generarDescripcion({
+        ...form,
+        notas: anterior ?? form.descripcion,
+      });
       setAnterior((a) => a ?? form.descripcion);
       setAutoria(`${modelo}${usaFotos ? ", mirando las fotos" : ""}`);
       set("descripcion", descripcion);

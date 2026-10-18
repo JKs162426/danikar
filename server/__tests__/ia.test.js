@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  configuracionIa,
   construirMensajes,
   generarDescripcion,
   imagenParaIa,
@@ -28,7 +29,7 @@ function fetchFalso(...respuestas) {
     llamadas.push(JSON.parse(opciones.body));
     const r = respuestas[Math.min(llamadas.length - 1, respuestas.length - 1)];
     if (r instanceof Error) throw r;
-    return { ok: r.status < 400, status: r.status, json: async () => r.cuerpo };
+    return { ok: r.status < 400, status: r.status, headers: new Headers(r.cabeceras ?? {}), json: async () => r.cuerpo };
   };
   fn.llamadas = llamadas;
   return fn;
@@ -103,6 +104,41 @@ test("traduce los errores del proveedor a mensajes entendibles", async () => {
     await assert.rejects(generarDescripcion({ producto, negocio, config, fetchImpl: fetchFalso(exito("   ")) }), { estado: 502 });
     const tiempo = Object.assign(new Error("timeout"), { name: "TimeoutError" });
     await assert.rejects(generarDescripcion({ producto, negocio, config, fetchImpl: fetchFalso(tiempo) }), { estado: 504 });
+  } finally {
+    console.error = silenciar;
+  }
+});
+
+test("por defecto: Qwen con visión, 1 foto, y acepta IA_API_KEY o GROQ_API_KEY", () => {
+  const c = configuracionIa({ GROQ_API_KEY: " gsk_x " });
+  assert.deepEqual(c, { clave: "gsk_x", url: "https://api.groq.com/openai/v1/chat/completions", modelo: "qwen/qwen3.8-27b", vision: true, maxFotos: 1 });
+  assert.equal(configuracionIa({ IA_API_KEY: "otra", GROQ_API_KEY: "gsk_x" }).clave, "otra");
+  assert.equal(configuracionIa({ IA_VISION: "false" }).vision, false);
+  assert.equal(configuracionIa({ IA_MAX_FOTOS: "99" }).maxFotos, 5);
+});
+
+test("las notas de la dueña (medidas) van al modelo con la orden de respetarlas", () => {
+  const conNotas = pedidoSchema.parse({ ...producto, notas: "Mide\nAncho 14cm\nLargo 28cm" });
+  const { mensajes } = construirMensajes(conNotas, negocio, { conFotos: false });
+  assert.match(mensajes[0].content, /incluye sus medidas tal cual/);
+  assert.match(mensajes[1].content, /Notas de la dueña:\nMide\nAncho 14cm\nLargo 28cm/);
+});
+
+test("manda como máximo las fotos configuradas", () => {
+  const muchas = pedidoSchema.parse({ ...producto, imagenes: [foto, foto, foto, foto, foto] });
+  const { mensajes } = construirMensajes(muchas, negocio, { conFotos: true, maxFotos: 2 });
+  assert.equal(mensajes[1].content.filter((p) => p.type === "image_url").length, 2);
+});
+
+test("descarta el razonamiento que anteponen algunos modelos", () => {
+  assert.equal(limpiarRespuesta("<think>\nveamos...\n</think>\n\nUn lazo precioso."), "Un lazo precioso.");
+});
+
+test("si el proveedor dice cuánto esperar, el mensaje lo dice", async () => {
+  const silenciar = console.error; console.error = () => {};
+  try {
+    const fetchImpl = fetchFalso({ status: 429, cabeceras: { "retry-after": "28.1" }, cuerpo: {} });
+    await assert.rejects(generarDescripcion({ producto, negocio, config, fetchImpl }), { estado: 429, message: "La IA está ocupada. Intenta en 29 segundos." });
   } finally {
     console.error = silenciar;
   }
