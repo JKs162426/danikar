@@ -39,6 +39,10 @@ Built for a **real client** and running in production.
   one origin and the session cookie stays first-party.
 - Security headers (including a strict Content-Security-Policy) are set in
   `vercel.json`.
+- Render's free plan sleeps the API after 15 idle minutes (~1 min to wake). A
+  scheduled GitHub Action (`.github/workflows/mantener-despierto.yml`) pings
+  `/api/salud` every 5 minutes during store hours (7:00–22:00 Venezuela time),
+  staying within the 750 free hours a month that the workspace's services share.
 - Admin login attempts and image uploads are rate-limited per client IP, taken
   from Cloudflare's `CF-Connecting-IP` (the only forwarded IP a client can't
   forge here), plus a global cap (`server/middleware/limitador.js`, `ip.js`).
