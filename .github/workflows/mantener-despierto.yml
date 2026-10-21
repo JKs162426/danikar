@@ -14,9 +14,10 @@ name: Mantener despierto el servidor
 
 on:
   schedule:
-    # 11:00–01:59 UTC = 7:00–21:59 en Venezuela (UTC-4, sin horario de verano).
+    # Cada 5 min de 7:00 a 21:59, hora de Venezuela.
     # Minutos 2, 7, 12…: GitHub retrasa más las tareas del minuto 0.
-    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 11-23,0-1 * * *"
+    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 7-21 * * *"
+      timezone: "America/Caracas"
   # Para probarlo a mano desde la pestaña Actions.
   workflow_dispatch:
 
