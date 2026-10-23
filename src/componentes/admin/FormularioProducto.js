@@ -4,6 +4,7 @@ import {
   obtenerEstadoIa,
   generarDescripcion,
 } from "../../api/contenido";
+import { fotoAjustada } from "../../utils/fotos";
 import "../../estilos/admin.css";
 
 const TIPOS_AGARRE = ["pinza", "banda", "diadema", "gancho"];
@@ -329,7 +330,7 @@ export default function FormularioProducto({
           <div className="form-imagen-grid">
             {form.imagenes.map((url, i) => (
               <div key={i} className="form-imagen-thumb">
-                <img src={url} alt="" />
+                <img src={fotoAjustada(url, { ancho: 228, alto: 228 })} alt="" />
                 <button
                   onClick={() => quitarImagen(i)}
                   className="form-imagen-quitar"

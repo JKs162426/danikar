@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { formatearBs, formatearPrecio, precioMinimo } from "../../utils/whatsapp";
+import { fotoAjustada, juegoDeFotos } from "../../utils/fotos";
 
 export default function TarjetaProducto({ producto, tasa, onElegir }) {
   const [imagenActiva, setImagenActiva] = useState(0);
@@ -12,7 +13,9 @@ export default function TarjetaProducto({ producto, tasa, onElegir }) {
       <div className="tarjeta-foto">
         {imagenes.length > 0 ? (
           <img
-            src={imagenes[imagenActiva]}
+            src={fotoAjustada(imagenes[imagenActiva], { ancho: 800 })}
+            srcSet={juegoDeFotos(imagenes[imagenActiva])}
+            sizes="(max-width: 560px) 100vw, 360px"
             alt={producto.nombre}
             loading="lazy"
           />
@@ -38,7 +41,11 @@ export default function TarjetaProducto({ producto, tasa, onElegir }) {
               aria-pressed={imagenActiva === i}
               className={imagenActiva === i ? "activa" : ""}
             >
-              <img src={url} alt="" loading="lazy" />
+              <img
+                src={fotoAjustada(url, { ancho: 132, alto: 132 })}
+                alt=""
+                loading="lazy"
+              />
             </button>
           ))}
         </div>

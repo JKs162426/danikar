@@ -1,4 +1,5 @@
 import { formatearPrecio } from "../../utils/whatsapp";
+import { fotoAjustada } from "../../utils/fotos";
 import "../../estilos/admin.css";
 
 export default function ListaProductosAdmin({
@@ -34,7 +35,7 @@ export default function ListaProductosAdmin({
           >
             {p.imagenes?.[0] ? (
               <img
-                src={p.imagenes[0]}
+                src={fotoAjustada(p.imagenes[0], { ancho: 156, alto: 156 })}
                 alt={p.nombre}
                 className="admin-producto-thumb"
               />

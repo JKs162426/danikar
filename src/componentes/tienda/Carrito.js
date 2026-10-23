@@ -3,6 +3,7 @@ import Modal from "../comun/Modal";
 import Cantidad from "./Cantidad";
 import Total from "./Total";
 import { construirEnlace, formatearPrecio } from "../../utils/whatsapp";
+import { fotoAjustada } from "../../utils/fotos";
 
 export default function Carrito({ negocio, carrito, onCerrar }) {
   const { lineas, total, cambiarCantidad, quitar, vaciar } = carrito;
@@ -29,7 +30,13 @@ export default function Carrito({ negocio, carrito, onCerrar }) {
             {lineas.map((l) => (
               <li key={l.clave} className="carrito-linea">
                 {l.producto.imagenes[0] ? (
-                  <img src={l.producto.imagenes[0]} alt="" />
+                  <img
+                    src={fotoAjustada(l.producto.imagenes[0], {
+                      ancho: 192,
+                      alto: 192,
+                    })}
+                    alt=""
+                  />
                 ) : (
                   <span className="carrito-linea-foto" aria-hidden="true">
                     🎀

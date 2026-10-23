@@ -8,6 +8,7 @@ import {
   formatearPrecio,
   precioDeVariante,
 } from "../../utils/whatsapp";
+import { fotoAjustada, juegoDeFotos } from "../../utils/fotos";
 
 export default function OpcionesProducto({ negocio, producto, onAgregar, onCerrar }) {
   const [color, setColor] = useState(producto.colores[0] ?? "");
@@ -26,7 +27,13 @@ export default function OpcionesProducto({ negocio, producto, onAgregar, onCerra
   return (
     <Modal titulo={producto.nombre} onCerrar={onCerrar}>
       {producto.imagenes[0] && (
-        <img src={producto.imagenes[0]} alt="" className="opciones-foto" />
+        <img
+          src={fotoAjustada(producto.imagenes[0], { ancho: 800 })}
+          srcSet={juegoDeFotos(producto.imagenes[0])}
+          sizes="(max-width: 560px) 100vw, 440px"
+          alt=""
+          className="opciones-foto"
+        />
       )}
       <h2 className="modal-titulo">{producto.nombre}</h2>
       {producto.descripcion && (
