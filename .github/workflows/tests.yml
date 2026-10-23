@@ -1,0 +1,45 @@
+name: Tests
+
+# Corre los tests del servidor y de la tienda en cada push a main y en cada
+# pull request. Si alguno falla, el commit queda marcado con ❌ en GitHub.
+# Vercel y Render despliegan igual: esto avisa, no frena el despliegue.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Si llegan dos push seguidos, solo importa el último.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # Node 22: los tests del servidor usan mock.module (desde Node 22.3).
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tests del servidor
+        id: servidor
+        run: npm run test:server
+
+      # Corre aunque fallen los del servidor, para ver todo lo roto de una vez.
+      - name: Tests de la tienda
+        if: ${{ success() || steps.servidor.outcome == 'failure' }}
+        run: npm test -- --watchAll=false
+        env:
+          CI: true
