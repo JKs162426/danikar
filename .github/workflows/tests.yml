@@ -31,6 +31,10 @@ jobs:
           node-version: 22
           cache: npm
 
+      # El lock lo escribe npm 11; el npm 10 que trae Node 22 lo rechaza
+      # ("Missing: yaml from lock file", un peer opcional de Tailwind).
+      - run: npm install -g npm@11
+
       - run: npm ci
 
       - name: Tests del servidor
