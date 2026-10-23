@@ -15,7 +15,7 @@ export default function TarjetaProducto({ producto, tasa, onElegir }) {
           <img
             src={fotoAjustada(imagenes[imagenActiva], { ancho: 800 })}
             srcSet={juegoDeFotos(imagenes[imagenActiva])}
-            sizes="(max-width: 560px) 100vw, 360px"
+            sizes="(max-width: 560px) 50vw, 360px"
             alt={producto.nombre}
             loading="lazy"
           />

@@ -22,6 +22,7 @@
   width: 72px;
   height: 72px;
   object-fit: contain;
+  border-radius: 50%;
   animation: latido 1.6s ease-in-out infinite;
 }
 @keyframes latido {
@@ -41,10 +42,14 @@
     ),
     var(--papel);
 }
+/* logo.png es un círculo sobre un cuadrado blanco: se recorta igual que en
+   el pie para que no quede la caja blanca sobre el fondo rosado. */
 .tienda-logo {
   width: 96px;
   height: 96px;
   object-fit: contain;
+  border-radius: 50%;
+  box-shadow: var(--sombra-alta);
   margin: 0 auto var(--e-3);
 }
 .tienda-hero h1 {
@@ -221,15 +226,21 @@
   transform: translateY(-3px);
   box-shadow: var(--sombra-alta);
 }
+/* 3:4 como la mayoría de las fotos (48 de 63 portadas), así todas las
+   tarjetas de una fila miden lo mismo. La foto va absoluta porque, con
+   aspect-ratio, el alto propio de la imagen estiraba la caja. */
 .tarjeta-foto {
   position: relative;
-  aspect-ratio: 1;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
   background: var(--papel-hondo);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .tarjeta-foto img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -317,6 +328,78 @@
   font-size: var(--t-sm);
   font-weight: 500;
   color: var(--tinta-suave);
+}
+
+/* En el teléfono, dos productos por fila: con una sola columna cada uno
+   ocupaba casi una pantalla. La descripción completa se lee al abrirlo. */
+@media (max-width: 560px) {
+  .lista-productos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--e-3);
+  }
+  .tarjeta-etiqueta {
+    top: var(--e-2);
+    left: var(--e-2);
+    padding: 2px 8px;
+    font-size: 0.6875rem;
+  }
+  /* Miniaturas en una sola fila que se desliza, sin ocupar varias líneas. */
+  .tarjeta-miniaturas {
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 6px var(--e-2) 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tarjeta-miniaturas::-webkit-scrollbar {
+    display: none;
+  }
+  .tarjeta-miniaturas button {
+    flex-shrink: 0;
+  }
+  .tarjeta-miniaturas img {
+    width: 34px;
+    height: 34px;
+  }
+  .tarjeta-cuerpo {
+    padding: var(--e-3);
+  }
+  .tarjeta-categoria {
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+  }
+  .tarjeta-cuerpo h3 {
+    font-size: var(--t-base);
+  }
+  .tarjeta-descripcion {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.8125rem;
+  }
+  .tarjeta-precio {
+    font-size: 1.125rem;
+  }
+  .tarjeta-precio-bs,
+  .tarjeta-precio small {
+    font-size: var(--t-xs);
+  }
+  .tarjeta-cuerpo .boton {
+    padding: 10px var(--e-2);
+    font-size: var(--t-sm);
+  }
+}
+/* Teléfonos muy angostos (320 px): menos margen para que "Elegir
+   opciones" quepa en una línea. */
+@media (max-width: 359px) {
+  .tarjeta-cuerpo {
+    padding: var(--e-2);
+  }
+  .tarjeta-cuerpo .boton {
+    padding: 10px var(--e-1);
+    font-size: 0.8125rem;
+  }
 }
 
 /* ── Modal ── */
