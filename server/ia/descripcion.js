@@ -8,6 +8,7 @@ import { TIPOS_AGARRE } from "../config/esquema.js";
 
 export const MAX_DESCRIPCION = 1000;
 const TIEMPO_MAXIMO_MS = 20 * 1000;
+export const MAX_FOTOS_POR_PETICION = 3;
 
 export function configuracionIa(entorno = process.env) {
   return {
@@ -18,7 +19,8 @@ export function configuracionIa(entorno = process.env) {
     // Cada foto cuesta unos 1.800 tokens (medido: igual a 512 que a 768 px)
     // y el plan gratuito de Groq da 7.000 por minuto. Con 1 foto entran unos
     // 3 pedidos por minuto, así "Otra versión" no choca con el límite.
-    maxFotos: Math.max(0, Math.min(5, Number(entorno.IA_MAX_FOTOS ?? 1) || 0)),
+    // Groq admite como máximo 3 imágenes por petición con este modelo
+    maxFotos: Math.max(0, Math.min(MAX_FOTOS_POR_PETICION, Number(entorno.IA_MAX_FOTOS ?? 1) || 0)),
   };
 }
 
