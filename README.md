@@ -65,9 +65,10 @@ superhero only exist in the photo.
   prices (they change) and no emojis. Code: `server/ia/descripcion.js`.
 - **Keeps what the owner wrote:** the existing description (often the
   measurements) is sent as owner notes that must be kept verbatim.
-- **Sized for the free tier:** each photo costs ~1,800 tokens at any size, so
-  one 768 px photo is sent by default (`IA_MAX_FOTOS`); smaller images cost the
-  same and were recognized worse. If the model can't read the photo, it retries
+- **Sized for the free tier:** Groq counts each image as 2,048 input tokens for
+  this model, whatever its size (measured here: about 1,800, the same at 512
+  and 768 px), so one 768 px photo is sent by default (`IA_MAX_FOTOS`); smaller
+  images cost the same and were recognized worse. If the model can't read the photo, it retries
   with text only.
 - **Safe by design:** the API key never reaches the browser; the endpoint is
   admin-only, rate-limited (20 requests / 10 min) and only forwards Cloudinary

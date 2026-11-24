@@ -15,9 +15,10 @@ export function configuracionIa(entorno = process.env) {
     url: entorno.IA_URL ?? "https://api.groq.com/openai/v1/chat/completions",
     modelo: entorno.IA_MODELO ?? "qwen/qwen3.8-27b",
     vision: entorno.IA_VISION !== "false",
-    // Cada foto cuesta unos 1.800 tokens (medido: igual a 512 que a 768 px)
-    // y el plan gratuito de Groq da 7.000 por minuto. Con 1 foto entran unos
-    // 3 pedidos por minuto, así "Otra versión" no choca con el límite.
+    // Groq cuenta cada foto como 2.048 tokens para este modelo (medido: unos
+    // 1.800, igual a 512 que a 768 px) y el plan gratuito da 7.000 por minuto.
+    // Con 1 foto entran unos 3 pedidos por minuto, así "Otra versión" no choca
+    // con el límite.
     maxFotos: Math.max(0, Math.min(5, Number(entorno.IA_MAX_FOTOS ?? 1) || 0)),
   };
 }
