@@ -6,6 +6,7 @@ import {
   generarDescripcion,
   imagenParaIa,
   limpiarRespuesta,
+  MAX_FOTOS_POR_PETICION,
   pedidoSchema,
 } from "../ia/descripcion.js";
 
@@ -114,7 +115,11 @@ test("por defecto: Qwen con visión, 1 foto, y acepta IA_API_KEY o GROQ_API_KEY"
   assert.deepEqual(c, { clave: "gsk_x", url: "https://api.groq.com/openai/v1/chat/completions", modelo: "qwen/qwen3.8-27b", vision: true, maxFotos: 1 });
   assert.equal(configuracionIa({ IA_API_KEY: "otra", GROQ_API_KEY: "gsk_x" }).clave, "otra");
   assert.equal(configuracionIa({ IA_VISION: "false" }).vision, false);
-  assert.equal(configuracionIa({ IA_MAX_FOTOS: "99" }).maxFotos, 5);
+  assert.equal(configuracionIa({ IA_MAX_FOTOS: "2" }).maxFotos, 2);
+  // Groq admite como máximo 3 imágenes por petición con este modelo
+  assert.equal(MAX_FOTOS_POR_PETICION, 3);
+  assert.equal(configuracionIa({ IA_MAX_FOTOS: "5" }).maxFotos, 3);
+  assert.equal(configuracionIa({ IA_MAX_FOTOS: "99" }).maxFotos, 3);
 });
 
 test("las notas de la dueña (medidas) van al modelo con la orden de respetarlas", () => {
